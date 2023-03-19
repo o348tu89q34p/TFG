@@ -1,0 +1,5 @@
+I love working with Git. It's a simple, fast and superb version control system.
+This is a change to the file being tracked.
+This is a second change that I want to revert.
+
+Text added after the first commit.
