@@ -1,35 +1,35 @@
 namespace Game;
 
 public class SpanishCard : Card {
-    private SpanishRank? _rank;
-    private SpanishSuit? _suit;
+    private OrderedEnum<SpanishRank>? _rank;
+    private OrderedEnum<SpanishSuit>? _suit;
     private bool _isJoker;
 
     /// <param name=rank>Human readable name for a rank or "Joker".</param>
     /// <param name=suit>Human readable name for a suit or "Joker".</param>
     /// <returns>Card suit that represents the suit indicated by the name received or the joker if both values are "Joker".</returns>
-    /// <exception cref="InvalidArgumentException">The names provided do not represent a valid rank, suit or joker in the Spanish suit.</exception>
+    /// <exception cref="InvalidArgumentException">The names provided do not represent a valid rank, suit or joker in the OrderedEnum<Spanish suit.</exception>
     public SpanishCard(string rank, string suit) {
         if (rank.Equals("Joker") && suit.Equals("Joker")) {
             _rank = null;
             _suit = null;
             _isJoker = true;
         } else {
-            _rank = new SpanishRank(rank);
-            _suit = new SpanishSuit(suit);
+            _rank = new OrderedEnum<SpanishRank>(rank);
+            _suit = new OrderedEnum<SpanishSuit>(suit);
             _isJoker = false;
         }
     }
 
     /// <summary>Private getter for the attribute rank.</summary>
     /// <returns>The value of the internal representation of a card's rank.</summary>
-    private SpanishRank? GetRank() {
+    private OrderedEnum<SpanishRank>? GetRank() {
         return this._rank;
     }
 
     /// <summary>Private getter for the attribute suit.</summary>
     /// <returns>The value of the internal representation of a card's suit.</summary>
-    private SpanishSuit? GetSuit() {
+    private OrderedEnum<SpanishSuit>? GetSuit() {
         return this._suit;
     }
 
@@ -41,31 +41,31 @@ public class SpanishCard : Card {
         }
 
         /*
-        SpanishRank thisRank = this.GetRank();
-        SpanishSuit thisSuit = this.GetSuit();
-        SpanishRank nextRank = thisRank.NextRank();
-        SpanishSuit nextSuit = thisSuit.NextSuit();
-        SpanishRank newRank;
-        SpanishSuit newSuit;
+        OrderedEnum<SpanishRank> thisRank> = this.GetRank>();
+        OrderedEnum<SpanishSuit> thisSuit> = this.GetSuit>();
+        OrderedEnum<SpanishRank> nextRank> = thisRank>.NextRank>();
+        OrderedEnum<SpanishSuit> nextSuit> = thisSuit>.NextSuit>();
+        OrderedEnum<SpanishRank> newRank>;
+        OrderedEnum<SpanishSuit> newSuit>;
 
-        if (nextRank == null) {
-            if (nextSuit == null) {
+        if (nextRank> == null) {
+            if (nextSuit> == null) {
                 return null;
             }
 
-            // newRank = SpanishRank.FirstRank();
-            newSuit = nextSuit;
+            // newRank> = OrderedEnum<SpanishRank>.FirstRank>();
+            newSuit> = nextSuit>;
             // Return new card.
         }
         // Maybe rank and suit need a generate first method.
-        if (thisRank.IsLastRank()) {
-            if (thisSuit.IsLastSuit()) {
+        if (thisRank>.IsLastRank>()) {
+            if (thisSuit>.IsLastSuit>()) {
                 return null;
             }
-            newRank = thisRank.NextRank();
+            newRank> = thisRank>.NextRank>();
         }
 
-        newSuit = thisSuit.NextSuit()
+        newSuit> = thisSuit>.NextSuit>()
         */
 
         return this;

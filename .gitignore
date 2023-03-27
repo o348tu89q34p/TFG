@@ -1,4 +1,5 @@
-ignoreme.*
+errors.*
+error.*
 
 # Build results
 [Dd]ebug/
