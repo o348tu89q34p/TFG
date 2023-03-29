@@ -7,17 +7,19 @@ class Program {
         try {
             var s = OrderedEnum<SpanishSuit>.First().GetName();
             var r = OrderedEnum<SpanishRank>.First().GetName();
-            var c = new Card<OrderedEnum<SpanishSuit>,
+            var cards = Card<OrderedEnum<SpanishSuit>,
                 OrderedEnum<SpanishRank>,
                 SpanishSuit,
-                SpanishRank>("Swords", "Ace");
+                SpanishRank>.buildDecks(2, 4);
 
-            if (c.IsJoker()) {
-                Console.WriteLine($"Built a joker.");
-            } else {
-                Console.WriteLine($"{c.ToString()}");
-                c.Next();
-                Console.WriteLine($"{c.ToString()}");
+            if (cards == null) {
+                return;
+            }
+
+            // foreach (Card<OrderedEnum<SpanishSuit>, OrderedEnum<SpanishRank>, SpanishSuit, SpanishRank> c in cards) {
+            // Console.WriteLine(c.ToString());
+            for (int i = 0; i < 1; i++) {
+                Console.WriteLine(cards[i].ToString());
             }
         } catch (ArgumentException) {
             Console.WriteLine("Invalid rank name.");

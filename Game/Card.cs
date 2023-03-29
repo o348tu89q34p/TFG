@@ -13,7 +13,7 @@ public class Card<S, R, T, U>
     /// <param name=rank>Human readable name for a rank or "Joker".</param>
     /// <param name=suit>Human readable name for a suit or "Joker".</param>
     /// <returns>Card suit that represents the suit indicated by the name received or the joker if both values are "Joker".</returns>
-    /// <exception cref="InvalidArgumentException">The names provided do not represent a valid rank, suit or joker in the OrderedEnum<Spanish suit.</exception>
+    /// <exception cref="InvalidArgumentException">The names provided do not represent a valid rank, suit or joker in the suit.</exception>
     public Card(string suit, string rank) {
         if (suit.Equals("Joker") && rank.Equals("Joker")) {
             _suit = (S)new OrderedEnum<T>(0);
@@ -24,6 +24,45 @@ public class Card<S, R, T, U>
             _rank = (R)new OrderedEnum<U>(rank);
             _isJoker = false;
         }
+    }
+
+    /// <param name=nDecks>Number of full decks to generate.</param>
+    /// <param name=nJokers>Number of joker cards to add to the deck.</param>
+    /// <returns>Returns a nDecks decks with their cards ordered and one deck after the other and nJokers added at the end. Returns null if any argument is a negative number or if there is a problem creating a card.</returns>
+    public static Card<S, R, T, U>[]? buildDecks(int nDecks, int nJokers) {
+        if (nDecks < 0 || nJokers < 0) {
+            return null;
+        }
+
+        int nSuits = OrderedEnum<T>.GetNumEnums();
+        int nRanks = OrderedEnum<U>.GetNumEnums();
+
+        Card<S, R, T, U>[] all = new Card<S, R, T, U>[nDecks*nSuits*nRanks + nJokers];
+        int pos = 0;
+        string suitName;
+        string rankName;
+
+        for (int i = 0; i < nDecks; i++) {
+            for (int j = 0; j < nSuits; j++) {
+                suitName = (new OrderedEnum<T>(j)).GetName();
+                for (int k = 0; k < nRanks; k++) {
+                    try {
+                        rankName = (new OrderedEnum<U>(k)).GetName();
+                        all[pos] = new Card<S, R, T, U>(suitName, rankName);
+                        pos++;
+                    } catch (ArgumentException) {
+                        return null;
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < nJokers; i++) {
+            all[pos] = new Card<S, R, T, U>("Joker", "Joker");
+            pos++;
+        }
+
+        return all;
     }
 
     private bool GetJoker() {
