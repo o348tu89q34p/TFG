@@ -9,6 +9,12 @@ public class Card<S, R, T, U>
     private S _suit;
     private R _rank;
     private bool _isJoker;
+    /*
+      For the score we could have something on player that asks
+      for the type of the card to this class and determines
+      what the score is there but there is nothing explicitly
+      stored in here.
+     */
 
     /// <param name=rank>Human readable name for a rank or "Joker".</param>
     /// <param name=suit>Human readable name for a suit or "Joker".</param>
