@@ -12,15 +12,26 @@ class Program {
                 SpanishSuit,
                 SpanishRank>.buildDecks(2, 4);
 
-            if (cards == null) {
-                return;
+            // Create a smaller deck.
+            int size = 10;
+            var deck = new ArrayHand<Card<OrderedEnum<SpanishSuit>,
+                OrderedEnum<SpanishRank>,
+                SpanishSuit,
+                SpanishRank>>(size);
+
+            // Put in it a few cards from a full hand.
+            for (int i = 0; i < size; i++) {
+                deck.Append(cards.Check(i));
             }
 
-            // foreach (Card<OrderedEnum<SpanishSuit>, OrderedEnum<SpanishRank>, SpanishSuit, SpanishRank> c in cards) {
-            // Console.WriteLine(c.ToString());
-            for (int i = 0; i < 1; i++) {
-                Console.WriteLine(cards[i].ToString());
+            // Shuffle the cards in the hand.
+            deck.Suffle();
+
+            // Display the suffled cards.
+            for (int i = 0; i < size; i++) {
+                Console.WriteLine(deck.Check(i).ToString());
             }
+
         } catch (ArgumentException) {
             Console.WriteLine("Invalid rank name.");
         }
