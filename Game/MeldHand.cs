@@ -83,7 +83,7 @@ public class MeldHand<S, R, T, U>
             throw new BadOperationException("can add to run last");
         }
 
-        return insider.IsPredecessor(c, this.GetCanWrap());
+        return insider.IsPrev(c, this.GetCanWrap());
     }
 
     private bool CanAddToRunFirst(Card<S, R, T, U> c) {
@@ -92,7 +92,7 @@ public class MeldHand<S, R, T, U>
             throw new BadOperationException("can add to run first");
         }
 
-        return c.IsPredecessor(insider, this.GetCanWrap());
+        return c.IsPrev(insider, this.GetCanWrap());
     }
 
     private bool ValidRunLength() {
@@ -121,7 +121,7 @@ public class MeldHand<S, R, T, U>
             (this.ValidSetLength() || this.ValidRunLength()))
         {
             if (first != null) {
-                this.GetRightmost().Next();
+                this.GetRightmost().Next(this.GetCanWrap());
             }
             this.GetCards().AddLast(c);
             return true;
@@ -148,7 +148,7 @@ public class MeldHand<S, R, T, U>
         if (this.CanAddToRunLast(c) &&
             this.ValidRunLength())
         {
-            this.GetRightmost().Next();
+            this.GetRightmost().Next(this.GetCanWrap());
             this.SetMeldType(MeldType.Run);
             this.GetCards().AddLast(c);
             return true;

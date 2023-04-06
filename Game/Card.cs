@@ -26,23 +26,19 @@ public class Card<S, R, T, U>
     /// Card that represents the suit and rank indicated by the
     /// names received or the joker if both values are "Joker".
     /// </returns>
-    /// <exception cref="BadCardException">
+    /// <exception cref="ArgumentException">
     /// The names provided do not represent a valid rank, suit
     /// or joker in the suit.
     /// </exception>
     public Card(string suit, string rank) {
-        try {
-            if (suit.Equals("Joker") && rank.Equals("Joker")) {
-                _suit = (S)new OrderedEnum<T>(0);
-                _rank = (R)new OrderedEnum<U>(0);
-                _isJoker = true;
-            } else {
-                _suit = (S)new OrderedEnum<T>(suit);
-                _rank = (R)new OrderedEnum<U>(rank);
-                _isJoker = false;
-            }
-        } catch (ArgumentException) {
-            throw new BadCardException("card constructor");
+        if (suit.Equals("Joker") && rank.Equals("Joker")) {
+            _suit = (S)new OrderedEnum<T>(0);
+            _rank = (R)new OrderedEnum<U>(0);
+            _isJoker = true;
+        } else {
+            _suit = (S)new OrderedEnum<T>(suit);
+            _rank = (R)new OrderedEnum<U>(rank);
+            _isJoker = false;
         }
     }
 
@@ -99,10 +95,8 @@ public class Card<S, R, T, U>
 
     private S GetSuit() {
         if (this.IsJoker()) {
-            throw new InvalidCardException("get suit");
+            throw new CardBadKindException("get suit");
         } else if (this._suit == null) {
-            // A suit can be null in this implementation but it
-            // is an error to call GetSet when that is the case.
             throw new CardBadStateException();
         }
 
@@ -111,7 +105,7 @@ public class Card<S, R, T, U>
 
     private R GetRank() {
         if (this.IsJoker()) {
-            throw new InvalidCardException("get rank");
+            throw new CardBadKindException("get rank");
         } else if (this._rank == null) {
             throw new CardBadStateException();
         }
@@ -121,7 +115,7 @@ public class Card<S, R, T, U>
 
     private S SetSuit(S suit) {
         if (this.IsJoker()) {
-            throw new InvalidCardException("set suit");
+            throw new CardBadKindException("set suit");
         }
 
         return this._suit = suit;
@@ -129,7 +123,7 @@ public class Card<S, R, T, U>
 
     private R SetRank(R rank) {
         if (this.IsJoker()) {
-            throw new InvalidCardException("set rank");
+            throw new CardBadKindException("set rank");
         }
 
         return this._rank = rank;
@@ -137,7 +131,7 @@ public class Card<S, R, T, U>
 
     private bool IsFirstSuit() {
         if (this.IsJoker()) {
-            throw new CardOperationException("is first suit");
+            throw new CardBadKindException("is first suit");
         }
 
         return this.GetSuit().IsFirst();
@@ -145,7 +139,7 @@ public class Card<S, R, T, U>
 
     private bool IsFirstRank() {
         if (this.IsJoker()) {
-            throw new CardOperationException("is first rank");
+            throw new CardBadKindException("is first rank");
         }
 
         return this.GetRank().IsFirst();
@@ -153,7 +147,7 @@ public class Card<S, R, T, U>
 
     private bool IsLastSuit() {
         if (this.IsJoker()) {
-            throw new CardOperationException("is last suit");
+            throw new CardBadKindException("is last suit");
         }
 
         return this.GetSuit().IsLast();
@@ -161,7 +155,7 @@ public class Card<S, R, T, U>
 
     private bool IsLastRank() {
         if (this.IsJoker()) {
-            throw new CardOperationException("is last rank");
+            throw new CardBadKindException("is last rank");
         }
 
         return this.GetRank().IsLast();
@@ -169,34 +163,44 @@ public class Card<S, R, T, U>
 
     private bool IsFirst() {
         if (this.IsJoker()) {
-            throw new CardOperationException("is first");
+            throw new CardBadKindException("is first");
         }
 
-        return this.IsFirstSuit() && this.IsFirstSuit();
+        return this.IsFirstSuit() && this.IsFirstRank();
     }
 
     private bool IsLast() {
         if (this.IsJoker()) {
-            throw new CardOperationException("is last");
+            throw new CardBadKindException("is last");
         }
 
-        return this.IsLastSuit() && this.IsLastSuit();
+        return this.IsLastSuit() && this.IsLastRank();
     }
 
     /// <summary>
-    /// Change this card into the next in the natural order.
-    /// If it's the last on the deck or the joker it stays
-    /// the same.
+    /// This card becomes the previous value in the cards'
+    /// defined natural order. If wrap is true the last card
+    /// wraps to the first.
     /// </summary>
-    /// <exception cref="CardOperationException">
-    /// The card has no next value: it's a joker or is the
-    /// last in the ordering.
+    /// <param name="wrap">
+    /// Boolean used to indicate if next on the last card makes
+    /// it wrap to become the first.
+    /// </param>
+    /// <exception cref="CardBadKindException">
+    /// The card is a joker.
     /// </exception>
-    public void Next() {
+    /// <exception cref="CardOperationException">
+    /// The card is not a joker, it's last and wrap is false.
+    /// </exception>
+    public void Next(bool wrap) {
+        if (this.IsJoker()) {
+            throw new CardBadKindException("next");
+        }
+
         var thisRank = this.GetRank();
         var thisSuit = this.GetSuit();
 
-        if (this.IsJoker() || this.IsLast()) {
+        if (this.IsLast() || !wrap) {
             throw new CardOperationException("next");
         }
 
@@ -208,20 +212,29 @@ public class Card<S, R, T, U>
     }
 
     /// <summary>
-    /// Change this card into the previous card in the natural
-    /// order.
-    /// If it's the frist on the deck or the joker it stays
-    /// the same.
+    /// This card becomes the previous value in the cards'
+    /// defined natural order. If wrap is true the first card
+    /// wraps to the last.
     /// </summary>
-    /// <exception cref="CardOperationException">
-    /// The card has no previous value: it's a joker or is the
-    /// first in the ordering.
+    /// <param name="wrap">
+    /// Boolean used to indicate if next on the first card makes
+    /// it wrap to become the first.
+    /// </param>
+    /// <exception cref="CardBadKindException">
+    /// The card is a joker.
     /// </exception>
-    public void Prev() {
+    /// <exception cref="CardOperationException">
+    /// The card is not a joker, it's first and wrap is false.
+    /// </exception>
+    public void Prev(bool wrap) {
+        if (this.IsJoker()) {
+            throw new CardBadKindException("prev");
+        }
+
         var thisRank = this.GetRank();
         var thisSuit = this.GetSuit();
 
-        if (this.IsJoker() || this.IsLast()) {
+        if (this.IsFirst() || !wrap) {
             throw new CardOperationException("prev");
         }
 
@@ -229,48 +242,33 @@ public class Card<S, R, T, U>
             thisSuit.Prev();
         }
 
-        // Think about this.
-        // and also about next.
-        thisRank.PrevWrap();
+        thisRank.Prev();
     }
 
     /// <summary>
-    /// Change this card into the next in the natural order
-    /// wrapping around to the beginning. if it's the joker
-    /// it stays the same.
+    /// Increases the rank of the card by one within its
+    /// current suit. If warp is true, the last rank wraps to
+    /// the first.
     /// </summary>
-    /// <exception cref="CardOperationException">
-    /// The card has no next value: it's a joker.
+    /// <param name="wrap">
+    /// Boolean used to indicate if next on the last suit
+    /// makes it wrap to become the first.
+    /// </param>
+    /// <exception cref="CardBadKindException">
+    /// This card is a joker.
     /// </exception>
-    public void NextWrap() {
-        S thisSuit = this.GetSuit();
-        R thisRank = this.GetRank();
-
+    /// <exception cref="CardOperationException">
+    /// This card is not a joker and its rank is not the last
+    /// within its suit.
+    /// </exception>
+    public void NextInSuit(bool wrap) {
         if (this.IsJoker()) {
-            throw new CardOperationException("next wrap");
+            throw new CardBadKindException("next in suit");
         }
+
+        R thisRank = this.GetRank();
 
         if (thisRank.IsLast()) {
-            thisSuit.NextWrap();
-        }
-
-        thisRank.NextWrap();
-    }
-
-    /// <summary>
-    /// Increases the rank of the card by one.
-    /// </summary>
-    /// <exception cref="CardOperationException">
-    /// The card has no next value: it's a joker.
-    /// </exception>
-    public void NextInSuit() {
-        R thisRank = this.GetRank();
-
-        if (thisRank == null) {
-            throw new CardBadStateException("next in suit");
-        }
-
-        if (this.IsJoker()) {
             throw new CardOperationException("next in suit");
         }
 
@@ -278,28 +276,38 @@ public class Card<S, R, T, U>
     }
 
     /// <summary>
-    /// Increases the rank of the card by one. If the rank is
-    /// the highest it is set to the lowest. If the card is a
-    /// joker nothing happens.
+    /// Decreases the rank of the card by one within its
+    /// current suit. If warp is true, the first rank wraps to
+    /// the last.
     /// </summary>
-    /// <exception cref="CardOperationException">
-    /// The card has no next value: it's a joker.
+    /// <param name="wrap">
+    /// Boolean used to indicate if previous on the first suit
+    /// makes it wrap to become the last.
+    /// </param>
+    /// <exception cref="CardBadKindException">
+    /// This card is a joker.
     /// </exception>
-    public void NextInSuitWrap() {
+    /// <exception cref="CardOperationException">
+    /// This card is not a joker and its rank is not the first
+    /// within its suit.
+    /// </exception>
+    public void PrevInSuit(bool wrap) {
+        if (this.IsJoker()) {
+            throw new CardBadKindException("prev in suit");
+        }
+
         R thisRank = this.GetRank();
 
-        if (thisRank == null) {
-            throw new CardBadStateException("next in suit wrap");
+        if (thisRank.IsFirst()) {
+            throw new CardOperationException("prev in suit");
         }
 
-        if (this.IsJoker() || thisRank == null) {
-            throw new CardOperationException("next in suit wrap");
-        }
-
-        thisRank.NextWrap();
+        thisRank.Prev();
     }
 
-    /// <param name="c">Is not a joker.</param>
+    /// <param name="c">
+    /// True.
+    /// </param>
     /// <returns>
     /// Returns 0 if this and c represent the same card.
     /// Returns a negative number if this has a suit that is
@@ -335,18 +343,20 @@ public class Card<S, R, T, U>
         return cmp;
     }
 
-    /// <param name="c">Is not a joker.</param>
+    /// <param name="c">
+    /// Is not a joker.
+    /// </param>
     /// <returns>
     /// Returns 0 if this and c have the same suit. Returns a
     /// negative value if the suit in this is smaller than c's
     /// suit and 1 if its greater.
     /// </returns>
-    /// <exception cref="CardOperationException">
-    /// The card is a joker.
+    /// <exception cref="CardBadKindException">
+    /// This or c are jokers.
     /// </exception>
     public int CompareSuit(Card<S, R, T, U> c) {
         if (this.IsJoker() || c.IsJoker()) {
-            throw new CardOperationException("compare suit");
+            throw new CardBadKindException("compare suit");
         }
 
         S thisSuit = this.GetSuit();
@@ -355,19 +365,21 @@ public class Card<S, R, T, U>
         return thisSuit.CompareTo(thatSuit);
     }
 
-    /// <param name=c>Is not a joker.</param>
+    /// <param name=c>
+    /// Is not a joker.
+    /// </param>
     /// <returns>
     /// Returns 0 if this and c have the same rank. Returns a
     /// negative value if the rank in this is smaller than c's
     /// rank and 1 if its greater. Returns null when involving
     /// jokers.
     /// </returns>
-    /// <exception cref="CardOperationException">
-    /// The card is a joker.
+    /// <exception cref="CardBadKindException">
+    /// This or c are jokers.
     /// </exception>
     public int CompareRank(Card<S, R, T, U> c) {
         if (this.IsJoker() || c.IsJoker()) {
-            throw new CardOperationException("compare rank");
+            throw new CardBadKindException("compare rank");
         }
 
         R thisRank = this.GetRank();
@@ -380,12 +392,12 @@ public class Card<S, R, T, U>
     /// True if the card has the highest rank within its suit.
     /// False otherwise.
     /// </returns>
-    /// <exception cref="CardOperationException">
+    /// <exception cref="CardBadKindException">
     /// The card is a joker.
     /// </exception>
     public bool IsLastInSuit() {
         if (this.IsJoker()) {
-            throw new CardOperationException("last in suit");
+            throw new CardBadKindException("last in suit");
         }
 
         R thisRank = this.GetRank();
@@ -397,17 +409,17 @@ public class Card<S, R, T, U>
     /// True if the card has the lowest rank within its suit.
     /// False otherwise.
     /// </returns>
-    /// <exception cref="CardOperationException">
+    /// <exception cref="CardBadKindException">
     /// The card is a joker.
     /// </exception>
     public bool IsFirstInSuit() {
         if (this.IsJoker()) {
-            throw new CardOperationException("first in suit");
+            throw new CardBadKindException("first in suit");
         }
 
-        S thisSuit = this.GetSuit();
+        R thisRank = this.GetRank();
 
-        return thisSuit.IsFirst();
+        return thisRank.IsFirst();
     }
 
     /// <returns>
@@ -431,21 +443,66 @@ public class Card<S, R, T, U>
         return thisRank.GetName() + " of " + thisSuit.GetName();
     }
 
-    public bool IsPredecessor(Card<S, R, T, U> c, bool canWrap) {
+    /// <returns>
+    /// Returns true if c correspons to the card that comes
+    /// after this in the natural ordering of a deck. If wrap
+    /// is true, the first card is next to the last.
+    /// </returns>
+    /// <param name="wrap">
+    /// Boolean used to indicate that if this card is the last,
+    /// the first card of the deck is considered the next.
+    /// </param>
+    /// <exception cref="CardBadKindException">
+    /// This card or c are a joker.
+    /// </exception>
+    public bool IsNext(Card<S, R, T, U> c, bool wrap) {
+        if (this.IsJoker() || c.IsJoker()) {
+            throw new CardBadKindException("is next");
+        }
+
         var aux = Card<S, R, T, U>.Copy(this);
 
         try {
-            if (canWrap) {
-                aux.NextWrap();
-            } else {
-                aux.Next();
-            }
+            aux.Prev(wrap);
             return aux.Equals(c);
         } catch {
             return false;
         }
     }
 
+    /// <returns>
+    /// Returns true if c correspons to the card that comes
+    /// before this in the natural ordering of a deck. If wrap
+    /// is true, the last card is next to the first.
+    /// </returns>
+    /// <param name="wrap">
+    /// Boolean used to indicate that if this card is the first,
+    /// the last card of the deck is considered the next.
+    /// </param>
+    /// <exception cref="CardBadKindException">
+    /// This card or c are a joker.
+    /// </exception>
+    public bool IsPrev(Card<S, R, T, U> c, bool wrap) {
+        if (this.IsJoker() || c.IsJoker()) {
+            throw new CardBadKindException("is next");
+        }
+
+        var aux = Card<S, R, T, U>.Copy(this);
+
+        try {
+            aux.Next(wrap);
+            return aux.Equals(c);
+        } catch {
+            return false;
+        }
+    }
+
+    /// <returns>
+    /// A copy of c.
+    /// </returns>
+    /// <param name="c">
+    /// True.
+    /// </param>
     public static Card<S, R, T, U> Copy(Card<S, R, T, U> c) {
         if (c.IsJoker()) {
             return new Card<S, R, T, U>("Joker", "Joker");
@@ -457,6 +514,13 @@ public class Card<S, R, T, U>
         return new Card<S, R, T, U>(s, r);
     }
 
+    /// <returns>
+    /// True if this card and c represent the same card, false
+    /// otherwise.
+    /// </returns>
+    /// <param name="c">
+    /// True.
+    /// </param>
     public bool Equals(Card<S, R, T, U> c) {
         if (this.IsJoker() && c.IsJoker()) {
             return true;
