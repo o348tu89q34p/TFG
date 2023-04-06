@@ -36,7 +36,7 @@ public class StackHand<T> {
         this._pile = new Stack<T>(size);
 
         for (int i = 0; i < size; i++) {
-            this.GetPile().Push(elems.Check(i));
+            this.GetPile().Push(elems.CheckAt(i));
         }
     }
 

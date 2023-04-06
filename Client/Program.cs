@@ -1,4 +1,5 @@
-﻿using Game;
+﻿using System;
+using Game;
 
 namespace Client;
 
@@ -21,7 +22,7 @@ class Program {
 
             // Put in it a few cards from a full hand.
             for (int i = 0; i < size; i++) {
-                deck.Append(cards.Check(i));
+                deck.Append(cards.CheckAt(i));
             }
 
             // Shuffle the cards in the hand.
@@ -29,7 +30,7 @@ class Program {
 
             // Display the suffled cards.
             for (int i = 0; i < size; i++) {
-                Console.WriteLine(deck.Check(i).ToString());
+                Console.WriteLine(deck.CheckAt(i).ToString());
             }
 
         } catch (ArgumentException) {

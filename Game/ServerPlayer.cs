@@ -1,6 +1,6 @@
 namespace Game;
 
-public class Player<S, R, T, U>
+public class ServerPlayer<S, R, T, U>
     where T: struct, System.Enum
     where U: struct, System.Enum
     where S: OrderedEnum<T>
@@ -9,7 +9,7 @@ public class Player<S, R, T, U>
     private ArrayHand<Card<S, R, T, U>> _hand;
     private bool _hasComeOut;
 
-    public Player(ArrayHand<Card<S, R, T, U>> hand) {
+    public ServerPlayer(ArrayHand<Card<S, R, T, U>> hand) {
         this._hand = hand;
         this.SetHasComeOut(false);
     }
@@ -29,21 +29,18 @@ public class Player<S, R, T, U>
     /// <param name="card">
     /// The card to add to the player's hand.
     /// </param>
-    /// <returns>
-    /// Returns true if the card could be added to the player's
-    /// hand and false otherwise.
-    /// </returns>
+    /// <summary>
+    /// Add card to the player's hand.
+    /// </summary>
     /// <exception cref="FullHandException">
     /// The player's hand is full.
     /// </exception>
-    public bool ToAdd(Card<S, R, T, U> card) {
+    public void ToAdd(Card<S, R, T, U> card) {
         if (this.GetHand().IsFull()) {
-            return false;
+            throw new FullHandException("to add");
         }
 
         this.GetHand().Append(card);
-
-        return true;
     }
 
     /// <summary>
@@ -62,7 +59,7 @@ public class Player<S, R, T, U>
         int i = 0;
 
         foreach (int p in pos) {
-            arr[i] = this.GetHand().Check(p);
+            arr[i] = this.GetHand().CheckAt(p);
             i++;
         }
 
@@ -83,7 +80,7 @@ public class Player<S, R, T, U>
     /// hand size.
     /// </exception>
     public Card<S, R, T, U> ToShed(int pos) {
-        return this.GetHand().Check(pos);
+        return this.GetHand().CheckAt(pos);
     }
 
     /// <summary>
@@ -100,7 +97,7 @@ public class Player<S, R, T, U>
     /// hand size.
     /// </exception>
     public void ShedCard(int pos) {
-        this.GetHand().Remove(pos);
+        this.GetHand().RemoveAt(pos);
     }
 
     /// <returns>

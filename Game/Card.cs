@@ -208,6 +208,33 @@ public class Card<S, R, T, U>
     }
 
     /// <summary>
+    /// Change this card into the previous card in the natural
+    /// order.
+    /// If it's the frist on the deck or the joker it stays
+    /// the same.
+    /// </summary>
+    /// <exception cref="CardOperationException">
+    /// The card has no previous value: it's a joker or is the
+    /// first in the ordering.
+    /// </exception>
+    public void Prev() {
+        var thisRank = this.GetRank();
+        var thisSuit = this.GetSuit();
+
+        if (this.IsJoker() || this.IsLast()) {
+            throw new CardOperationException("prev");
+        }
+
+        if (thisRank.IsFirst()) {
+            thisSuit.Prev();
+        }
+
+        // Think about this.
+        // and also about next.
+        thisRank.PrevWrap();
+    }
+
+    /// <summary>
     /// Change this card into the next in the natural order
     /// wrapping around to the beginning. if it's the joker
     /// it stays the same.
@@ -278,15 +305,20 @@ public class Card<S, R, T, U>
     /// Returns a negative number if this has a suit that is
     /// less than c or if the suit is the same, this' rank is
     /// lower than c's. Returns a positive number in any other
-    /// combination of suit and rank. Returns null when
-    /// comparing a joker with a regular card.
+    /// combination of suit and rank. Jokers are the highest
+    /// value.
     /// </returns>
-    /// <exception cref="CardOperationException">
-    /// The card is a joker.
-    /// </exception>
     public int CompareTo(Card<S, R, T, U> c) {
-        if (this.IsJoker() || c.IsJoker()) {
-            throw new CardOperationException("compare to");
+        if (this.IsJoker() && c.IsJoker()) {
+            return 0;
+        }
+
+        if (this.IsJoker()) {
+            return 1;
+        }
+
+        if (c.IsJoker()) {
+            return 0;
         }
 
         S thisSuit = this.GetSuit();
@@ -323,7 +355,7 @@ public class Card<S, R, T, U>
         return thisSuit.CompareTo(thatSuit);
     }
 
-    /// <param name=c>True.</param>
+    /// <param name=c>Is not a joker.</param>
     /// <returns>
     /// Returns 0 if this and c have the same rank. Returns a
     /// negative value if the rank in this is smaller than c's
@@ -397,5 +429,48 @@ public class Card<S, R, T, U>
         R thisRank = this.GetRank();
 
         return thisRank.GetName() + " of " + thisSuit.GetName();
+    }
+
+    public bool IsPredecessor(Card<S, R, T, U> c, bool canWrap) {
+        var aux = Card<S, R, T, U>.Copy(this);
+
+        try {
+            if (canWrap) {
+                aux.NextWrap();
+            } else {
+                aux.Next();
+            }
+            return aux.Equals(c);
+        } catch {
+            return false;
+        }
+    }
+
+    public static Card<S, R, T, U> Copy(Card<S, R, T, U> c) {
+        if (c.IsJoker()) {
+            return new Card<S, R, T, U>("Joker", "Joker");
+        }
+
+        string s = c.GetSuit().GetName();
+        string r = c.GetRank().GetName();
+
+        return new Card<S, R, T, U>(s, r);
+    }
+
+    public bool Equals(Card<S, R, T, U> c) {
+        if (this.IsJoker() && c.IsJoker()) {
+            return true;
+        }
+
+        if (this.IsJoker()) {
+            return false;
+        }
+
+        if (c.IsJoker()) {
+            return false;
+        }
+
+        return this.GetSuit().Equals(c.GetSuit()) &&
+            this.GetRank().Equals(c.GetRank());
     }
 }

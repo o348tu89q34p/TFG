@@ -3,32 +3,28 @@ using System;
 namespace Game;
 
 /// <summary>
-/// Hand optimised direct access to positions by index.
-/// Used as a player's hand.
+/// Hand optimised for direct access to positions by index.
 /// </summary>
 public class ArrayHand<T> {
-    private T[] _hand;
-    private int _size;
+    private List<T> _hand;
 
     /// <summary>
-    /// Buld a hand that can hold up to n cards.
+    /// Buld an empty hand that can hold up to n cards.
     /// </summary>
     /// <param name="n">
-    /// The maximum capacity of the hand.
+    /// n >= 0. The maximum capacity of the hand.
     /// </param>
     /// <exception cref="NegativeSizseException">
-    /// The value of n is negative.
+    /// n has a negative value.
     /// </exception>
     public ArrayHand(int n) {
         if (n < 0) {
             throw new NegativeSizeException("array hand");
-        } else {
-            this._hand = new T[n];
         }
-        this.SetSize(0);
+        this._hand = new List<T>(n);
     }
 
-    private T[] GetHand() {
+    private List<T> GetHand() {
         return this._hand;
     }
 
@@ -36,20 +32,16 @@ public class ArrayHand<T> {
     /// Get the number of cards in the hand.
     /// </summary>
     public int GetSize() {
-        return this._size;
-    }
-
-    private void SetSize(int size) {
-        this._size = size;
+        return this.GetHand().Count;
     }
 
     private int GetCapacity() {
-        return this.GetHand().Length;
+        return this.GetHand().Capacity;
     }
 
     /// <returns>
-    /// True if the hand does not admit any more cards, false
-    /// otherwise.
+    /// True if the number of cards in the hand is the same as
+    /// the hand's capacity, false otherwise.
     /// </returns>
     public bool IsFull() {
         return this.GetSize() == this.GetCapacity();
@@ -62,13 +54,29 @@ public class ArrayHand<T> {
         return this.GetSize() == 0;
     }
 
-    private void Put(T elem, int pos) {
+    /// <summary>
+    /// Make elem be the element in position pos in the hand.
+    /// </summary>
+    /// <param name="pos">
+    /// 0 <= pos < this.GetSize().
+    /// </param>
+    /// <param name="elem">
+    /// True.
+    /// </param>
+    /// <exception cref="NegativeIndexException">
+    /// pos < 0.
+    /// </exception>
+    /// <exception cref="IndexOverflowException">
+    /// pos >= this.GetSize().
+    /// </exception>
+    private void InsertAt(int pos, T elem) {
         if (pos < 0) {
-            throw new NegativeIndexException("adding");
-        } else if (pos >= this.GetCapacity()) {
-            throw new IndexOverflowException("adding");
+            throw new NegativeIndexException("insert at");
+        } else if (pos >= this.GetSize()) {
+            throw new IndexOverflowException("insert at");
         }
 
+        // this.GetHand().Insert(pos, elem);
         this.GetHand()[pos] = elem;
     }
 
@@ -76,6 +84,9 @@ public class ArrayHand<T> {
     /// Add the element provided to the right of the contents
     /// of the hand.
     /// </summary>
+    /// <param name="elem">
+    /// True.
+    /// </param>
     /// <exception cref="FullHandException">
     /// The hand is at its maximum capacity before adding the
     /// element.
@@ -85,61 +96,82 @@ public class ArrayHand<T> {
             throw new FullHandException("append");
         }
 
-        int pos = this.GetSize();
-        this.Put(elem, pos);
-        this.SetSize(pos + 1);
+        this.GetHand().Add(elem);
     }
 
     /// <returns>
-    /// The card from the hand found in position pos starting
+    /// The card from the hand found in position pos counting
     /// from the left.
     /// </returns>
+    /// <param name="pos">
+    /// 0 <= pos < this.GetSize().
+    /// </param>
     /// <exception cref="NegativeIndexException">
-    /// The index provided is a negative number.
+    /// pos < 0.
     /// </exception>
     /// <exception cref="IndexOverflowException">
-    /// The index provided refers to a position greater than
-    /// hand size.
+    /// pos >= this.GetSize().
     /// </exception>
-    public T Check(int pos) {
+    public T CheckAt(int pos) {
         if (pos < 0) {
-            throw new NegativeIndexException("checking");
+            throw new NegativeIndexException("check at");
         } else if (pos >= this.GetSize()) {
-            throw new IndexOverflowException("checking");
+            throw new IndexOverflowException("check at");
         }
 
         return this.GetHand()[pos];
     }
 
-    /// <param name="pos">
-    /// The position in the hand of the card to check.
-    /// </param>
     /// <summary>
     /// The card found in position pos within the player's
     /// hand is removed.
     /// </summary>
+    /// <param name="pos">
+    /// 0 <= pos < this.GetSize().
+    /// </param>
     /// <exception cref="NegativeIndexException">
-    /// The index provided is a negative number.
+    /// pos < 0.
     /// </exception>
     /// <exception cref="IndexOverflowException">
-    /// The index provided refers to a position greater than
-    /// hand size.
+    /// pos >= this.GetSize().
     /// </exception>
-    public void Remove(int pos) {
+    public void RemoveAt(int pos) {
         if (pos < 0) {
-            throw new NegativeIndexException("removing");
+            throw new NegativeIndexException("remove at");
         } else if (pos >= this.GetSize()) {
-            throw new IndexOverflowException("removing");
+            throw new IndexOverflowException("remove at");
         }
 
-        T[] hand = this.GetHand();
-        int top = this.GetSize();
+        this.GetHand().RemoveAt(pos);
+    }
 
-        for (int i = pos; i < top - 1; i++) {
-            hand[i] = hand[i + 1];
+    /// <returns>
+    /// Returns the element in position pos after replacing it
+    /// by elem.
+    /// </returns>
+    /// <param name="elem">
+    /// True.
+    /// </param>
+    /// <param name="pos">
+    /// 0 <= pos < this.GetSize().
+    /// </param>
+    /// <exception cref="NegativeIndexException">
+    /// pos < 0.
+    /// </exception>
+    /// <exception cref="IndexOverflowException">
+    /// pos >= this.GetSize().
+    /// </exception>
+    public T ReplaceAt(T elem, int pos) {
+        if (pos < 0) {
+            throw new NegativeIndexException("replace at");
+        } else if (pos >= this.GetSize()) {
+            throw new IndexOverflowException("replace at");
         }
 
-        this.SetSize(top - 1);
+        T aux = this.CheckAt(pos);
+        this.InsertAt(pos, elem);
+
+        return aux;
     }
 
     /// <summray>
@@ -153,9 +185,13 @@ public class ArrayHand<T> {
 
         for (int i = 0; i < n; i++) {
             r = rnd.Next(i, n);
-            aux = this.GetHand()[r];
-            this.GetHand()[r] = this.GetHand()[i];
-            this.GetHand()[i] = aux;
+            aux = this.CheckAt(r);
+            this.InsertAt(r, this.CheckAt(i));
+            this.InsertAt(i, aux);
         }
+    }
+
+    public void Sort() {
+        this.GetHand().Sort();
     }
 }

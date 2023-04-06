@@ -100,6 +100,20 @@ public class OrderedEnum<TEnum>
     }
 
     /// <summary>
+    /// Method used to change this enum into the previous value.
+    /// If this is the smallest value then it stays the same.
+    /// </summary>
+    public void Prev() {
+        int thisEnum = this.ToInt();
+
+        if (thisEnum <= 0) {
+            return;
+        }
+
+        this.SetEnum(OrderedEnum<TEnum>.FromInt(thisEnum - 1));
+    }
+
+    /// <summary>
     /// Method used to change this enum into the next value.
     /// If this is the greatest value then it becomes the
     /// smallest one.
@@ -109,6 +123,23 @@ public class OrderedEnum<TEnum>
         int nextEnum = (thisEnum + 1) % OrderedEnum<TEnum>.GetNumEnums();
 
         this.SetEnum(OrderedEnum<TEnum>.FromInt(nextEnum));
+    }
+
+    /// <summary>
+    /// Method used to change this enum into the previous value.
+    /// If this is the smallest value then it becomes the
+    /// greatest one.
+    /// </summary>
+    public void PrevWrap() {
+        int thisEnum = this.ToInt();
+        int prevEnum;
+        if (thisEnum <= 0) {
+            prevEnum = OrderedEnum<TEnum>.GetNumEnums() - 1;
+        } else {
+            prevEnum = thisEnum - 1;
+        }
+
+        this.SetEnum(OrderedEnum<TEnum>.FromInt(prevEnum));
     }
 
     /// <param name="e">
@@ -182,5 +213,9 @@ public class OrderedEnum<TEnum>
         int last = GetNumEnums() - 1;
 
         return new OrderedEnum<TEnum>(last);
+    }
+
+    public bool Equals(OrderedEnum<TEnum> e) {
+        return this.ToInt() == e.ToInt();
     }
 }
