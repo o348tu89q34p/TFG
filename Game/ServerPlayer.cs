@@ -6,15 +6,15 @@ public class ServerPlayer<S, R, T, U>
     where S: OrderedEnum<T>
     where R: OrderedEnum<U>
 {
-    private ArrayHand<Card<S, R, T, U>> _hand;
+    private ArrayHand<S, R, T, U> _hand;
     private bool _hasComeOut;
 
-    public ServerPlayer(ArrayHand<Card<S, R, T, U>> hand) {
+    public ServerPlayer(ArrayHand<S, R, T, U> hand) {
         this._hand = hand;
         this.SetHasComeOut(false);
     }
 
-    private ArrayHand<Card<S, R, T, U>> GetHand() {
+    private ArrayHand<S, R, T, U> GetHand() {
         return this._hand;
     }
 

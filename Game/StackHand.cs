@@ -6,8 +6,13 @@ namespace Game;
 /// <summary>
 /// Hand optimised for direct access to the top card.
 /// </summary>
-public class StackHand<T> {
-    private Stack<T> _pile;
+public class StackHand<S, R, T, U>
+    where T: struct, System.Enum
+    where U: struct, System.Enum
+    where S: OrderedEnum<T>
+    where R: OrderedEnum<U>
+{
+    private Stack<Card<S, R, T, U>> _pile;
 
     /// <summary>
     /// Build a hand stack of size n.
@@ -22,25 +27,25 @@ public class StackHand<T> {
         if (n < 0) {
             throw new NegativeSizeException("stack hand");
         }
-        this._pile = new Stack<T>(n);
+        this._pile = new Stack<Card<S, R, T, U>>(n);
     }
 
     /// <summary>
     /// Build a hand out of the contents of a hand array.
     /// </summary>
-    /// <param name="elems">
-    /// The elements to insert in the stack hand.
+    /// <param name="cards">
+    /// The cards to insert in the stack hand.
     /// </param>
-    public StackHand(ArrayHand<T> elems) {
-        int size = elems.GetSize();
-        this._pile = new Stack<T>(size);
+    public StackHand(ArrayHand<S, R, T, U> cards) {
+        int size = cards.GetSize();
+        this._pile = new Stack<Card<S, R, T, U>>(size);
 
         for (int i = 0; i < size; i++) {
-            this.GetPile().Push(elems.CheckAt(i));
+            this.GetPile().Push(cards.CheckAt(i));
         }
     }
 
-    private Stack<T> GetPile() {
+    private Stack<Card<S, R, T, U>> GetPile() {
         return this._pile;
     }
 
@@ -65,7 +70,7 @@ public class StackHand<T> {
     /// <exception cref="EmptyHandException">
     /// The stack is empty before removing the element.
     /// </exception>
-    public T TakeCard() {
+    public Card<S, R, T, U> TakeCard() {
         try {
             return this.GetPile().Pop();
         } catch (InvalidOperationException) {
@@ -79,7 +84,7 @@ public class StackHand<T> {
     /// <exception cref="EmptyHandException">
     /// The stack is empty before peeking into it.
     /// </exception>
-    public T CheckTop() {
+    public Card<S, R, T, U> CheckTop() {
         try {
             return this.GetPile().Peek();
         } catch (InvalidOperationException) {
@@ -90,7 +95,7 @@ public class StackHand<T> {
     /// <summary>
     /// Place the card given at the top of the stack.
     /// </summary>
-    public void PutCard(T elem) {
+    public void PutCard(Card<S, R, T, U> elem) {
         this.GetPile().Push(elem);
     }
 }

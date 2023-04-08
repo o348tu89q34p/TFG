@@ -15,10 +15,10 @@ class Program {
 
             // Create a smaller deck.
             int size = 10;
-            var deck = new ArrayHand<Card<OrderedEnum<SpanishSuit>,
+            var deck = new ArrayHand<OrderedEnum<SpanishSuit>,
                 OrderedEnum<SpanishRank>,
                 SpanishSuit,
-                SpanishRank>>(size);
+                SpanishRank>(size);
 
             // Put in it a few cards from a full hand.
             for (int i = 0; i < size; i++) {

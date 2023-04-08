@@ -56,7 +56,7 @@ public class Card<S, R, T, U>
     /// <exception cref="NegativeSizeException">
     /// Any of the parameters has a negative value.
     /// </exception>
-    public static ArrayHand<Card<S, R, T, U>> buildDecks(int nDecks, int nJokers) {
+    public static ArrayHand<S, R, T, U> buildDecks(int nDecks, int nJokers) {
         if (nDecks < 0 || nJokers < 0) {
             throw new NegativeSizeException("building deck");
         }
@@ -65,7 +65,7 @@ public class Card<S, R, T, U>
         int nRanks = OrderedEnum<U>.GetNumEnums();
 
         int size = nDecks*nSuits*nRanks + nJokers;
-        var deck = new ArrayHand<Card<S, R, T, U>>(size);
+        var deck = new ArrayHand<S, R, T, U>(size);
         string suitName;
         string rankName;
         Card<S, R, T, U> card;
@@ -137,7 +137,7 @@ public class Card<S, R, T, U>
         return this.GetSuit().IsFirst();
     }
 
-    private bool IsFirstRank() {
+    public bool IsFirstRank() {
         if (this.IsJoker()) {
             throw new CardBadKindException("is first rank");
         }
@@ -153,7 +153,7 @@ public class Card<S, R, T, U>
         return this.GetSuit().IsLast();
     }
 
-    private bool IsLastRank() {
+    public bool IsLastRank() {
         if (this.IsJoker()) {
             throw new CardBadKindException("is last rank");
         }
@@ -427,6 +427,13 @@ public class Card<S, R, T, U>
     /// </returns>
     public bool IsJoker() {
         return this.GetJoker();
+    }
+
+    /// <returns>
+    /// True if this is not a joker.
+    /// </returns>
+    public bool IsNatural() {
+        return !this.IsJoker();
     }
 
     /// <returns>
