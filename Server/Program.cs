@@ -5,6 +5,6 @@ namespace Server;
 
 class Program {
     static void Main(string[] args) {
-        Socket s = null;
+        Console.WriteLine("Game server.");
     }
 }
