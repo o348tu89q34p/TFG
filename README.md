@@ -10,11 +10,11 @@ Branca corresponent al lliurable parcial produït a la PAC 2.
 
 # Instruccions per compilar i executar
 ## Client
-cd Client
-dotnet build -c Release
-bin/Release/net6.0/Client.exe
-
+cd Client  
+dotnet build -c Release  
+bin/Release/net6.0/Client.exe  
+  
 ## Servidor
-cd Server
-dotnet build -c Release
-bin/Release/net6.0/Server.exe
+cd Server  
+dotnet build -c Release  
+bin/Release/net6.0/Server.exe  
