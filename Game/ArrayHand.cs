@@ -45,7 +45,7 @@ public class ArrayHand<S, R, T, U>
     /// <returns>
     /// The number of cards in the hand that are jokers.
     /// </returns>
-    public int GetNumJokers() {
+    public int GetNumWilds() {
         return this._numWc;
     }
 
@@ -54,11 +54,11 @@ public class ArrayHand<S, R, T, U>
     }
 
     private void IncNumJokers() {
-        this.SetNumJokers(this.GetNumJokers() + 1);
+        this.SetNumJokers(this.GetNumWilds() + 1);
     }
 
     private void DecNumJokers() {
-        this.SetNumJokers(this.GetNumJokers() - 1);
+        this.SetNumJokers(this.GetNumWilds() - 1);
     }
 
     /// <returns>
@@ -283,7 +283,7 @@ public class ArrayHand<S, R, T, U>
     }
 
     public (Card<S, R, T, U>?, int) FirstNatural() {
-        if (this.GetNumJokers() == this.GetSize()) {
+        if (this.GetNumWilds() == this.GetSize()) {
             return (null, 0);
         }
 

@@ -13,7 +13,7 @@ public class Round<S, R, T, U>
     private StackHand<S, R, T, U> _discardPile;
     private Rules _rules;
     private Meld<S, R, T, U>[] _melds;
-    int _turn;
+    private int _turn;
 
     public Round(Rules rules) {
         this._turn = 0;
@@ -42,5 +42,31 @@ public class Round<S, R, T, U>
             this._discardPile.PutCard(this._stock.TakeCard());
         }
         // the stock is set
+    }
+
+    private Rules GetRules() {
+        return this._rules;
+    }
+
+    private int GetTurn() {
+        return this._turn;
+    }
+
+    private ServerPlayer<S, R, T, U>[] GetPlayers() {
+        return this._players;
+    }
+
+    private bool IsOver() {
+        // add more conditions here.
+        return this.GetRules().RoundOver(this.GetTurn());
+    }
+
+    public void Play() {
+        while (!this.IsOver()) {
+            if (this.GetRules().HasHonorRound() && this.GetTurn() == 1) {
+                // can't win.
+            }
+            this._turn++;
+        }
     }
 }

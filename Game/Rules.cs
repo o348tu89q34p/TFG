@@ -24,6 +24,8 @@ public class Rules {
     private int _numDecks;
     private int _numJokers;
     private int _cardsPerPlayer;
+    private int _maxTurns;
+    //private int _maxRounds;
 
 
     public Rules() {
@@ -35,6 +37,9 @@ public class Rules {
         _numDecks = 1;
         _numJokers = 1;
         _cardsPerPlayer = 1;
+
+        _hasHonorRound = false;
+        _maxTurns = -1;
     }
 
     private int GetNumPlayers() {
@@ -57,6 +62,10 @@ public class Rules {
         return this._needsOpen;
     }
 
+    private int GetMaxTurns() {
+        return this._maxTurns;
+    }
+
     public int NumPlayers() {
         return this.GetNumPlayers();
     }
@@ -75,5 +84,24 @@ public class Rules {
 
     public bool NeedsOpen() {
         return this.GetNeedsOpen();
+    }
+
+    public bool HasHonorRound() {
+        return this._hasHonorRound;
+    }
+
+    private bool PassedMaxTurns(int turns) {
+        if (turns < 0) {
+            return false;
+        }
+
+        return turns < this.GetMaxTurns();
+    }
+
+    public bool RoundOver(int turn) {
+        // random code.
+        _discardLast = turn < 12;
+        _canTakeJoker = turn < 14;
+        return PassedMaxTurns(turn);
     }
 }

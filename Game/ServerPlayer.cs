@@ -107,4 +107,8 @@ public class ServerPlayer<S, R, T, U>
     public bool IsOut() {
         return this.GetHand().IsEmpty();
     }
+
+    public bool HasWon() {
+        return this.GetHand().IsEmpty();
+    }
 }

@@ -2,6 +2,17 @@ using System;
 
 namespace Game;
 
+public class AddToFullException : Exception {
+    public AddToFullException(string i) :
+        base(String.Format("Adding more cards goes over the capacity: {0}", i)) {
+    }
+}
+
+public class NoMultipleWcException : Exception {
+    public NoMultipleWcException(string i) :
+        base(String.Format("Adding more than one wildcard: {0}", i)) {
+    }
+}
 
 // Safeguard for when an enum is given more values.
 public class UnimplementedStateException : Exception {
