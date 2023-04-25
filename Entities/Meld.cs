@@ -1,6 +1,6 @@
 using System;
 
-namespace Game;
+namespace Entities {
 
 public abstract class Meld<S, R, T, U>
     where T: struct, System.Enum
@@ -52,4 +52,5 @@ public abstract class Meld<S, R, T, U>
      *   complexity to figure it out.
      */
     public abstract void Replace(Card<S, R, T, U> arr, int pos);
+}
 }

@@ -1,4 +1,4 @@
-namespace Game;
+namespace Entities {
 
 public class BreaksRuleException : Exception {
     public BreaksRuleException() {
@@ -104,4 +104,5 @@ public class Rules {
         _canTakeJoker = turn < 14;
         return PassedMaxTurns(turn);
     }
+}
 }

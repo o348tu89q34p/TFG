@@ -1,6 +1,6 @@
 using System;
 
-namespace Game;
+namespace Entities {
 
 public class Round<S, R, T, U>
     where T: struct, System.Enum
@@ -8,7 +8,7 @@ public class Round<S, R, T, U>
     where S: OrderedEnum<T>
     where R: OrderedEnum<U>
 {
-    private ServerPlayer<S, R, T, U>[] _players;
+    private Player<S, R, T, U>[] _players;
     private StackHand<S, R, T, U> _stock;
     private StackHand<S, R, T, U> _discardPile;
     private Rules _rules;
@@ -18,7 +18,7 @@ public class Round<S, R, T, U>
     public Round(Rules rules) {
         this._turn = 0;
         this._rules = rules;
-        this._players = new ServerPlayer<S, R, T, U>[rules.NumPlayers()];
+        this._players = new Player<S, R, T, U>[rules.NumPlayers()];
         // The size is some informed expectation of how many melds per player there could be.
         this._melds = new Meld<S, R, T, U>[rules.NumPlayers()*3];
 
@@ -52,7 +52,7 @@ public class Round<S, R, T, U>
         return this._turn;
     }
 
-    private ServerPlayer<S, R, T, U>[] GetPlayers() {
+    private Player<S, R, T, U>[] GetPlayers() {
         return this._players;
     }
 
@@ -69,4 +69,5 @@ public class Round<S, R, T, U>
             this._turn++;
         }
     }
+}
 }

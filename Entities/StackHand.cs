@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Game;
+namespace Entities {
 
 /// <summary>
 /// Hand optimised for direct access to the top card.
@@ -98,4 +98,5 @@ public class StackHand<S, R, T, U>
     public void PutCard(Card<S, R, T, U> elem) {
         this.GetPile().Push(elem);
     }
+}
 }

@@ -1,6 +1,6 @@
 using System;
 
-namespace Game;
+namespace Entities {
 
 public abstract class MeldRun<S, R, T, U> : Meld<S, R, T, U>
     where T: struct, System.Enum
@@ -183,4 +183,5 @@ public abstract class MeldRun<S, R, T, U> : Meld<S, R, T, U>
 
         pointer.Value = card;
     }
+}
 }

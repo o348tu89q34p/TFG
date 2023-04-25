@@ -1,6 +1,7 @@
-namespace Game;
+namespace Entities {
 
-public class ServerPlayer<S, R, T, U>
+// make everything protected.
+public abstract class Player<S, R, T, U>
     where T: struct, System.Enum
     where U: struct, System.Enum
     where S: OrderedEnum<T>
@@ -9,7 +10,7 @@ public class ServerPlayer<S, R, T, U>
     private ArrayHand<S, R, T, U> _hand;
     private bool _hasComeOut;
 
-    public ServerPlayer(ArrayHand<S, R, T, U> hand) {
+    public Player(ArrayHand<S, R, T, U> hand) {
         this._hand = hand;
         this.SetHasComeOut(false);
     }
@@ -111,4 +112,5 @@ public class ServerPlayer<S, R, T, U>
     public bool HasWon() {
         return this.GetHand().IsEmpty();
     }
+}
 }

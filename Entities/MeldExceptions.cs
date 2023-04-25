@@ -1,6 +1,6 @@
 using System;
 
-namespace Game;
+namespace Entities {
 
 public class AddToFullException : Exception {
     public AddToFullException(string i) :
@@ -53,4 +53,5 @@ public class EmptyMeldException : Exception {
         base(String.Format("Operation on an empty meld: {0}", i))
     {
     }
+}
 }

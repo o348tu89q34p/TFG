@@ -1,6 +1,6 @@
 using System;
 
-namespace Game;
+namespace Entities {
 
 /*
  * Exception thrown when an operation is called on a card that
@@ -38,4 +38,5 @@ public class CardBadStateException : Exception {
         base(String.Format("Internal representation inconsistent at: {0}", i))
     {
     }
+}
 }

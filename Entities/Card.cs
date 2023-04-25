@@ -1,4 +1,4 @@
-namespace Game;
+namespace Entities {
 
 public class Card<S, R, T, U>
     where T: struct, System.Enum
@@ -544,4 +544,5 @@ public class Card<S, R, T, U>
         return this.GetSuit().Equals(c.GetSuit()) &&
             this.GetRank().Equals(c.GetRank());
     }
+}
 }

@@ -1,7 +1,6 @@
 using System;
 
-namespace Game;
-
+namespace Entities {
 /// <summary>
 /// Hand optimised for direct access to positions by index.
 /// </summary>
@@ -300,4 +299,5 @@ public class ArrayHand<S, R, T, U>
 
         return (first, pos - 1);
     }
+}
 }

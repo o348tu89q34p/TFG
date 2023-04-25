@@ -1,6 +1,6 @@
 using System;
 
-namespace Game;
+namespace Entities {
 
 public abstract class MeldSet<S, R, T, U> : Meld<S, R, T, U>
     where T: struct, System.Enum
@@ -158,4 +158,5 @@ public abstract class MeldSet<S, R, T, U> : Meld<S, R, T, U>
         }
         */
     }
+}
 }

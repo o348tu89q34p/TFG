@@ -1,6 +1,6 @@
 using System;
 
-namespace Game;
+namespace Entities {
 
 public class NegativeIndexException : Exception {
     public NegativeIndexException() {
@@ -50,4 +50,5 @@ public class FullHandException : Exception {
         base(String.Format("Invalid operation on a full hand: {0}", i))
     {
     }
+}
 }
