@@ -1,6 +1,6 @@
 ﻿using System;
 
-using Entities;
+using Domain;
 using GameLogic;
 
 namespace Client {

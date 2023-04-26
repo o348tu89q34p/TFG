@@ -1,4 +1,4 @@
-namespace Entities {
+namespace Domain {
 
 public class BreaksRuleException : Exception {
     public BreaksRuleException() {

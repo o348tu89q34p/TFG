@@ -1,4 +1,4 @@
-namespace Entities {
+namespace Domain {
 
 // make everything protected.
 public abstract class Player<S, R, T, U>

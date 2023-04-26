@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Entities {
+namespace Domain {
 
 /// <summary>
 /// Hand optimised for direct access to the top card.

@@ -4,9 +4,12 @@ using SFML.Graphics;
 using SFML.Window;
 using SFML.System;
 
+using Gui;
+
 namespace GameStates
 {
     class MenuState : GameState {
+        //private Label _ui;
         private Font _font;
         private Text _titleText;
         private Text _findText;
@@ -21,7 +24,7 @@ namespace GameStates
             this.gameStateManager = gameStateManager;
 
             // Set font.
-            this._font = new Font(FontUtils.TitleFont);
+            this._font = new Font(FontUtils.TextFont1);
             if (this._font == null) {
                 throw new Exception($"Failed to load font: {this._font}");
             }
@@ -81,7 +84,7 @@ namespace GameStates
             }
 
             RenderWindow window = (RenderWindow)sender;
-             window.Close();
+            window.Close();
         }
 
         public void OnKeyPress(object? sender, KeyEventArgs e) {

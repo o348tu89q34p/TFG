@@ -1,6 +1,6 @@
 using System;
 
-namespace Entities {
+namespace Domain {
 /// <summary>
 /// Hand optimised for direct access to positions by index.
 /// </summary>

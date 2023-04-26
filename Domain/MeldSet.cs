@@ -1,6 +1,6 @@
 using System;
 
-namespace Entities {
+namespace Domain {
 
 public abstract class MeldSet<S, R, T, U> : Meld<S, R, T, U>
     where T: struct, System.Enum

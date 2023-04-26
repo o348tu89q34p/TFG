@@ -1,6 +1,6 @@
 using System;
 
-namespace Entities {
+namespace Domain {
 
 public class NegativeIndexException : Exception {
     public NegativeIndexException() {

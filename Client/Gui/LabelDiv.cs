@@ -3,13 +3,24 @@ using SFML.System;
 
 namespace Gui {
     class Div : GuiComponent {
-        private GuiComponent[] _items;
+        protected GuiComponent[] _items;
+        protected DivType _orient;
+        protected DivAlign _align;
+        protected DivPos _pos;
+        protected float _space;
 
-        public Div(GuiComponent[] items, Vector2f pos, Vector2f size) {
+        public Div(GuiComponent[] items, DivAlign align, DivPos space, float s,
+                   DivPos p, DivType orient, Vector2f pos, Vector2f size)
+        {
+            this._orient = orient;
+            this._align = align;
+            this._pos = p;
+            this._space = s;
+            this.Size = size;
+            this.Position = pos;
+            // this._items = this.Align(items);
             this._items = items;
-            this.Size = new Vector2f(0.0f, 0.0f);
-            this.Position = new Vector2f(0.0f, 0.0f);
-            this.FillColor = Color.Transparent;
+            this.FillColor = Color.Green;
             this.HoverColor = Color.Transparent;
             this.OutlineColor = Color.Transparent;
             this.PressedColor = Color.Transparent;
@@ -17,8 +28,78 @@ namespace Gui {
             this.Id = -1;
         }
 
+        /*
+        public GuiComponent[] Align(GuiComponent[] gc) {
+            float x = 0.0f;
+            float y = 0.0f;
+            switch ((this._orient, this._align)) {
+                case (DivType.VERTICAL, DivAlign.HERE):
+                    x = 0.0f;
+                    break;
+                case (DivType.VERTICAL, DivAlign.CENTER):
+                    x = this.Size.X/2;
+                    break;
+                case (DivType.VERTICAL, DivAlign.THERE):
+                    x = this.Size.X;
+                    break;
+                case (DivType.HORIZONTAL, DivAlign.HERE):
+                    y = 0.0f;
+                    break;
+                case (DivType.HORIZONTAL, DivAlign.CENTER):
+                    y = this.Size.Y/2;
+                    break;
+                case (DivType.HORIZONTAL, DivAlign.THERE):
+                    y = this.Size.Y;
+                    break;
+                default:
+                    break;
+            }
+
+            float start = 0.0f;
+            switch (this._orient) {
+                case DivType.VERTICAL:
+                    start = this.Position.Y;
+                    break;
+                case DivType.HORIZONTAL:
+                    start = this.Position.X;
+                    break;
+            }
+
+            for (int i = 0; i < gc.Length; i++) {
+                switch ((this._orient, this._pos)) {
+                    case (DivType.VERTICAL, DivPos.AFTER):
+                        start += gc[i].Size.Y + this._space;
+                        break;
+                    case (DivType.VERTICAL, DivPos.FIXED):
+                        start += this._space;
+                        break;
+                    case (DivType.HORIZONTAL, DivPos.AFTER):
+                        start += gc[i].Size.X + this._space;
+                        break;
+                    case (DivType.HORIZONTAL, DivPos.FIXED):
+                        start += this._space;
+                        break;
+                }
+                switch (this._orient) {
+                    case DivType.VERTICAL:
+                        gc[i].Position.X = this.Position.X;
+                        gc[i].Position.Y = start;
+                        break;
+                    case DivType.HORIZONTAL:
+                        gc[i].Position.X = start;
+                        gc[i].Position.Y = this.Position.Y;
+                        break;
+                }
+            }
+
+            return gc;
+        }
+        */
+
         public override void Update(Vector2f mousePos) {
-            
+            foreach (GuiComponent gc in this._items) {
+                gc.Update(mousePos);
+            }
         }
 
         public override void Render(RenderTarget window) {

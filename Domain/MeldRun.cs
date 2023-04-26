@@ -1,6 +1,6 @@
 using System;
 
-namespace Entities {
+namespace Domain {
 
 public abstract class MeldRun<S, R, T, U> : Meld<S, R, T, U>
     where T: struct, System.Enum

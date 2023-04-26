@@ -1,4 +1,4 @@
-namespace Entities {
+namespace Domain {
 
 public class Card<S, R, T, U>
     where T: struct, System.Enum

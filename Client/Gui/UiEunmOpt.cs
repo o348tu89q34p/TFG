@@ -19,4 +19,20 @@ namespace Gui {
         BTN_HOVER = 2,
         BTN_ACTIVE = 3
     }
+
+    public enum DivType {
+        VERTICAL,
+        HORIZONTAL
+    }
+
+    public enum DivAlign {
+        HERE,
+        CENTER,
+        THERE
+    }
+
+    public enum DivPos {
+        AFTER,
+        FIXED
+    }
 }

@@ -1,6 +1,6 @@
 using System;
 
-namespace Entities {
+namespace Domain {
 
 public class Round<S, R, T, U>
     where T: struct, System.Enum

@@ -1,6 +1,6 @@
 using System;
 
-namespace Entities {
+namespace Domain {
 
 /*
  * Exception thrown when an operation is called on a card that
