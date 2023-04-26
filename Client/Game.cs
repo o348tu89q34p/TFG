@@ -85,6 +85,7 @@ namespace GameLogic {
 
         private void Render() {
             this._window.Clear();
+            this.DebugBackground();
             this._gameStateManager.Draw(this._window);
             this._window.Display();
         }
