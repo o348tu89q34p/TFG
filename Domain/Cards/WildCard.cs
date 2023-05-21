@@ -1,0 +1,83 @@
+using SFML.Graphics;
+
+namespace Domain {
+    public class WildCard<T, U> : ICard<T, U>
+        where T : Scale, new()
+        where U : Scale, new()
+        {
+            public Texture FrontTexture { get; private set; }
+            public Sprite CardSprite { get; private set; }
+
+            public WildCard() {
+                this.FrontTexture = new Texture(40, 40);
+                this.CardSprite = new Sprite(this.FrontTexture);
+            }
+
+            public bool IsFirst() {
+                throw new Exception();
+            }
+
+            public bool IsLast() {
+                throw new Exception();
+            }
+
+            public bool IsWithin(NaturalCard<T, U> a, NaturalCard<T, U> b) {
+                throw new Exception();
+            }
+
+            public bool IsNatural() {
+                return false;
+            }
+
+            public bool IsWild() {
+                return true;
+            }
+
+            public NaturalField<T> GetSuit() {
+                throw new Exception();
+            }
+
+            public NaturalField<U> GetRank() {
+                throw new Exception();
+            }
+
+            public void Next(bool wrap, bool inSuit) {
+                throw new Exception();
+            }
+
+            public void Prev(bool wrap, bool inSuit) {
+                throw new Exception();
+            }
+
+            public int CompareTo(ICard<T, U> c) {
+                if (c.IsWild()) {
+                    return 0;
+                }
+
+                return -1;
+            }
+
+            public int CompareRank(ICard<T, U> c) {
+                throw new Exception();
+            }
+
+            public int CompareSuit(ICard<T, U> c) {
+                throw new Exception();
+            }
+
+            public bool Equals(ICard<T, U> c) {
+                return this.IsWild() && c.IsWild();
+            }
+
+            public void Print() {
+                Console.WriteLine("Wildcard");
+            }
+
+            public void Update(RenderWindow window) {
+            }
+
+            public void Render(RenderWindow window) {
+                window.Draw(this.CardSprite);
+            }
+        }
+}
