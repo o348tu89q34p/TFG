@@ -25,6 +25,10 @@ namespace Domain {
             return (this._pointer - 1 + LenData())%LenData();
         }
 
+        public int Position() {
+            return this._pointer;
+        }
+
         public bool IsWithin(NaturalField<T> a, NaturalField<T> b) {
             return ((this._pointer >= a._pointer) &&
                     (this._pointer <= b._pointer));

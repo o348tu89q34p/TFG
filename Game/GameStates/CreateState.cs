@@ -2,7 +2,6 @@ using SFML.Graphics;
 using SFML.Window;
 using SFML.System;
 
-using Assets;
 using Gui;
 using Domain;
 
@@ -163,7 +162,8 @@ namespace Game {
                                 this.OptConsecWc.Setting.GetIt(),
                                 this.OptNeedsOut.Setting.GetIt(),
                                 3, 3,
-                                this.OptEndDiscard.Setting.GetIt());
+                                this.OptEndDiscard.Setting.GetIt(),
+                                DeckType.SPANISH_DECK);
                             this.GSManager.ChangeState(window, new MatchState<SpanishSuit, SpanishRank>(this.GSManager, window, r));
                         } else if (this.OptDeck.Setting.GetIt().CompareTo("Francesa") == 0) {
                             var r = new Rules<FrenchSuit, FrenchRank>(
@@ -178,7 +178,8 @@ namespace Game {
                                 this.OptConsecWc.Setting.GetIt(),
                                 this.OptNeedsOut.Setting.GetIt(),
                                 3, 3,
-                                this.OptEndDiscard.Setting.GetIt());
+                                this.OptEndDiscard.Setting.GetIt(),
+                                DeckType.FRENCH_DECK);
                             this.GSManager.ChangeState(window, new MatchState<FrenchSuit, FrenchRank>(this.GSManager, window, r));
                         } else {
                             Console.WriteLine("Good rules, bad comparison.");

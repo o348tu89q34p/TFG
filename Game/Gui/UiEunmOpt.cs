@@ -11,13 +11,18 @@ namespace Gui {
         TOPRIGHT,
         BOTTOMLEFT,
         BOTTOMRIGHT,
-        CENTER
+        CENTER,
+        TOPCENTER,
+        BOTTOMCENTER,
+        LEFTCENTER,
+        RIGHTCENTER
     }
 
     public enum ButtonState {
         BTN_IDLE = 0,
         BTN_HOVER = 2,
-        BTN_ACTIVE = 3
+        BTN_ACTIVE = 3,
+        BTN_DISABLED = 4
     }
 
     public enum DivType {

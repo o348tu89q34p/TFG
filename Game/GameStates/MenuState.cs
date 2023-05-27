@@ -4,7 +4,6 @@ using SFML.Window;
 using SFML.System;
 
 using Gui;
-using Assets;
 
 namespace Game {
     class MenuState : GameState {

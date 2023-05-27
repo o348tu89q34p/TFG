@@ -1,6 +1,3 @@
-using SFML.Graphics;
-using SFML.Window;
-
 namespace Domain {
     public interface ICard<T, U>
         where T : Scale, new()
@@ -23,6 +20,8 @@ namespace Domain {
             int CompareRank(ICard<T, U> c);
             int CompareSuit(ICard<T, U> c);
             bool Equals(ICard<T, U> c);
+
+            (int, int) Coords();
 
             public static ICard<T, U> Copy(ICard<T, U> c) {
                 if (c is WildCard<T, U>) {
@@ -62,7 +61,7 @@ namespace Domain {
                     hand.Append(new WildCard<T, U>());
                 }
 
-                //hand.Shuffle();
+                hand.Shuffle();
                 var stack = new Stack<ICard<T, U>>(hand.Size());
                 for (int i = 0; i < hand.Size(); i++) {
                     stack.Push(hand.GetAt(i));
@@ -72,8 +71,5 @@ namespace Domain {
             }
 
             void Print();
-
-            void Update(RenderWindow window);
-            void Render(RenderWindow window);
         }
 }

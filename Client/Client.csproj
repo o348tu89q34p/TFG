@@ -11,5 +11,10 @@
     <ProjectReference Include="..\Domain\Domain.csproj" />
     <ProjectReference Include="..\Game\Game.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\Game\Assets\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
 </Project>

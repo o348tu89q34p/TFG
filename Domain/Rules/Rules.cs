@@ -1,4 +1,9 @@
 namespace Domain {
+    public enum DeckType {
+        SPANISH_DECK,
+        FRENCH_DECK
+    }
+
     public class Rules<T, U>
         where T : Scale, new()
         where U : Scale, new()
@@ -13,11 +18,13 @@ namespace Domain {
 
             public bool EndDiscard { get; }
 
+            public DeckType Kind { get; }
+
             public Rules(int numSuits, int numRanks,
                          int numPlayers, int numDecks, int numWc, int numCards,
                          bool canWrap, bool multWc, bool consecWc,
                          bool needsOut, int minRunLen, int minSetLen,
-                         bool endDiscard)
+                         bool endDiscard, DeckType kind)
             {
                 int margin = 1; // At least one card at the stock.
                 if (!needsOut) {
@@ -50,6 +57,8 @@ namespace Domain {
                 this.LimitRounds = -1;
 
                 this.EndDiscard = endDiscard;
+
+                this.Kind = kind;
             }
         }
 }

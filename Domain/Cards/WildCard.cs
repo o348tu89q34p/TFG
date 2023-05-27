@@ -1,18 +1,8 @@
-using SFML.Graphics;
-
 namespace Domain {
     public class WildCard<T, U> : ICard<T, U>
         where T : Scale, new()
         where U : Scale, new()
         {
-            public Texture FrontTexture { get; private set; }
-            public Sprite CardSprite { get; private set; }
-
-            public WildCard() {
-                this.FrontTexture = new Texture(40, 40);
-                this.CardSprite = new Sprite(this.FrontTexture);
-            }
-
             public bool IsFirst() {
                 throw new Exception();
             }
@@ -69,15 +59,12 @@ namespace Domain {
                 return this.IsWild() && c.IsWild();
             }
 
+            public (int, int) Coords() {
+                throw new Exception();
+            }
+
             public void Print() {
                 Console.WriteLine("Wildcard");
-            }
-
-            public void Update(RenderWindow window) {
-            }
-
-            public void Render(RenderWindow window) {
-                window.Draw(this.CardSprite);
             }
         }
 }

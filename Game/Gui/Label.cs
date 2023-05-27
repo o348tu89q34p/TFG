@@ -86,6 +86,10 @@ namespace Gui {
             return this._text.GetGlobalBounds();
         }
 
+        public void SetPosition(Vector2f position) {
+            this._text.Position = position;
+        }
+
         public override void Update(RenderWindow window) {
             /*
             if (!this.CallUpdate) {
