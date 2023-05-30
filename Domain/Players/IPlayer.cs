@@ -13,7 +13,7 @@ public interface IPlayer<T, U>
         void DoMeldSet(Rules<T, U> rules, List<IMeld<T, U>> melds);
         void DoLayOff(List<IMeld<T, U>> melds);
         void DoReplace(List<IMeld<T, U>> melds);
-        void DoShed(Stack<ICard<T, U>> discard);
+        ICard<T, U> DoShed(Stack<ICard<T, U>> discard);
 
         void Add(ICard<T, U> card);
 

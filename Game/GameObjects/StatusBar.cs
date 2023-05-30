@@ -8,10 +8,12 @@ namespace GameObjects;
 public class StatusBar {
     private RectangleShape Rect { get; }
     private Text Message { get; set; }
+    private string Contents { get; set; }
 
     private const float Width = 0.60f;
     private const float Height = 25.0f;
     private const float Valign = 0.70f;
+    private const uint FontSize = 22;
 
     public StatusBar(RenderWindow window, string message) {
         float width = (float)window.Size.X*Width;
@@ -25,13 +27,26 @@ public class StatusBar {
             OutlineThickness = 2
         };
 
-        uint fontSize = 25;
-        this.Message = new Text(message, FontUtils.StatusFont, fontSize) {
-            FillColor = Color.Black
-        };
+        this.Contents = message;
+        this.Message = new Text(message, FontUtils.StatusFont, FontSize);
+        this.ArrangeMessage();
+    }
+
+    private void ArrangeMessage() {
+        this.Message.FillColor = Color.Black;
         float msgX = this.Rect.Position.X + this.Rect.GetGlobalBounds().Width/2.0f - this.Message.GetGlobalBounds().Width/2.0f;
-        float msgY = this.Rect.Position.Y + this.Rect.GetGlobalBounds().Height/2.0f - this.Message.GetGlobalBounds().Height/2.0f - fontSize/2.0f;
+        float msgY = this.Rect.Position.Y + this.Rect.GetGlobalBounds().Height/2.0f - this.Message.GetGlobalBounds().Height/2.0f - FontSize/2.0f;
         this.Message.Position = new Vector2f(msgX, msgY);
+    }
+
+    public void Update(RenderWindow window, string newMessage) {
+        if (this.Contents.Equals(newMessage)) {
+            return;
+        }
+
+        this.Contents = newMessage;
+        this.Message = new Text(newMessage, FontUtils.StatusFont, FontSize);
+        this.ArrangeMessage();
     }
 
     public void Render(RenderWindow window) {

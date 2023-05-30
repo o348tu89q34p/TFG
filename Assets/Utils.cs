@@ -41,8 +41,10 @@ namespace Game {
         // Change the file names in this section.
         private const string SpanishFace = CardPath + "french.png";
         private const string SpanishWildFace = CardPath + "french_joker.png";
+        private const string SpanishBack = CardPath + "french_back.png";
         public static Texture SpanishFaceTexture = new Texture(SpanishFace);
         public static Texture SpanishJokerTexture = new Texture(SpanishWildFace);
+        public static Texture SpanishBackTexture = new Texture(SpanishBack);
 
         // Other elements
         private const string OtherPath = "../Assets/Graphics/UI/";

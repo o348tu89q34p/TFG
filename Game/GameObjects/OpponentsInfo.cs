@@ -37,6 +37,22 @@ public class OpponentsInfo {
         }
     }
 
+    public void StartAnim(int i, Sprite sprite, Vector2f pos, PlayerProfile profile) {
+        this.Opponents.ElementAt(i).StartAnimation(sprite, pos, profile.NumCards);
+    }
+
+    public bool PlayAnimation() {
+        bool res = false;
+
+        foreach (var opp in this.Opponents) {
+            if (opp.IsAnimating()) {
+                res = res || opp.PlayAnimation();
+            }
+        }
+
+        return res;
+    }
+
     public void Render(RenderWindow window) {
         foreach (var opponent in this.Opponents) {
             opponent.Render(window);

@@ -146,20 +146,22 @@ public class HumanPlayer<T, U> : IPlayer<T, U>
             }
         }
 
-        public void DoShed(Stack<ICard<T, U>> discard) {
+        public ICard<T, U> DoShed(Stack<ICard<T, U>> discard) {
             string prompt = "Enter the position of the card to shed.";
             int i = InputReader.ReadIndex(prompt, 0, this.Hand.Size());
 
             ICard<T, U> card = this.Hand.GetAt(i);
             if (this.Picked == card) {
-                Console.WriteLine("Cannot discard the picked card if it's from the discard pile.");
-                return;
+                throw new Exception("Cannot discard the picked card if it's from the discard pile.");
             }
 
             discard.Push(this.Hand.GetAt(i));
+            ICard<T, U> c = this.Hand.GetAt(i);
             this.Hand.RemoveAt(i);
             this.HasPicked = false;
             this.Picked = null;
+
+            return c;
         }
 
         public bool HasWon() {

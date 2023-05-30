@@ -162,5 +162,13 @@ namespace Domain {
                 this.Hand.ElementAt(i).Print();
             }
         }
+
+        public void SortRuns() {
+            this.Hand.Sort((x, y) => x.CompareTo(y));
+        }
+
+        public void SortSets() {
+            this.Hand.Sort((x, y) => x.CompareRank(y));
+        }
     }
 }

@@ -64,12 +64,15 @@ public class DummyPlayer<T, U> : IPlayer<T, U>
         public void DoReplace(List<IMeld<T, U>> melds) {
         }
 
-        public void DoShed(Stack<ICard<T, U>> discard) {
+        public ICard<T, U> DoShed(Stack<ICard<T, U>> discard) {
             discard.Push(this.Hand.GetAt(0));
+            ICard<T, U> c = this.Hand.GetAt(0);
             this.Hand.RemoveAt(0);
             this.HasPicked = false;
             this.Picked = null;
             this.TurnState = 0;
+
+            return c;
         }
 
         public bool HasWon() {

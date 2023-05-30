@@ -1,5 +1,11 @@
 namespace Domain;
 
+public enum Phase {
+    OPPONENT,
+    HUMAN_INIT,
+    HUMAN_PLAY
+}
+
 public class GameState<T, U>
     where T : Scale, new()
     where U : Scale, new()
@@ -11,7 +17,8 @@ public class GameState<T, U>
         private List<IMeld<T, U>> Melds;
         private int Turn { get; set; }
         // private int Round { get; set; }
-        private int Human { get; }
+        private int Human { get; set; }
+        public Phase GamePhase { get; private set; }
 
         public GameState(Rules<T, U> rules) {
             // rules have been validated on creation
@@ -43,6 +50,8 @@ public class GameState<T, U>
             }
             */
 
+            this.SufflePlayers();
+
             // This deals nCards times one card per player.
             for (int i = 0; i < nCards; i++) {
                 for (int j = 0; j < Rules.NumPlayers; j++) {
@@ -53,6 +62,29 @@ public class GameState<T, U>
             if (!this.Rules.PlayerR.NeedsOut) {
                 this.Discard.Push(this.Stock.Pop());
             }
+
+            if (this.Players[0] is HumanPlayer<T, U>) {
+                this.GamePhase = Phase.HUMAN_INIT;
+            } else {
+                this.GamePhase = Phase.OPPONENT;
+            }
+        }
+
+        private void SufflePlayers() {
+            int n = this.Players.Length;
+            int r;
+            Random rnd = new Random();
+            IPlayer<T, U> aux;
+
+            for (int i = 0; i < n; i++) {
+                r = rnd.Next(i, n);
+                aux = this.Players[i];
+                this.Players[i] = this.Players[r];
+                this.Players[r] = aux;
+                if (this.Players[i] is HumanPlayer<T, U>) {
+                    this.Human = i;
+                }
+            }
         }
 
         private void PrintMelds() {
@@ -62,16 +94,6 @@ public class GameState<T, U>
                 this.Melds.ElementAt(i).Print();
             }
         }
-
-        /*
-          private void PrintPlayers() {
-          Console.WriteLine("Players:");
-          for (int i = 0; i < this.Players.Length; i++) {
-          Console.WriteLine(this.Players[i].GetName());
-          this.Players[i].ShowHand();
-          }
-          }
-        */
 
         private void PrintPiles() {
             Console.WriteLine("Piles:");
@@ -94,12 +116,6 @@ public class GameState<T, U>
         }
 
         public void Update() {
-            /*
-              this.PrintMelds();
-              this.PrintPlayers();
-              this.PrintPiles();
-            */
-
             this.FilpDiscard();
 
             IPlayer<T, U> p = this.Players[this.Turn%this.Players.Length];
@@ -137,13 +153,18 @@ public class GameState<T, U>
         }
 
         public List<PlayerProfile> GetOpponents() {
-            int nPlayers = this.Players.Length;
-            List<PlayerProfile> res = new List<PlayerProfile>(nPlayers - 1);
+            int nOpponents = this.Players.Length - 1;
+            List<PlayerProfile> res = new List<PlayerProfile>(nOpponents);
 
             int pointer = this.Human + 1;
-            for (int i = 0; i < nPlayers - 1; i++) {
-                res.Add(this.Players[pointer%nPlayers].GetProfile());
+            int count = 0;
+            while (count < nOpponents) {
+                res.Add(this.Players[(pointer + this.NumPlayers())%this.NumPlayers()].GetProfile());
                 pointer++;
+                if (pointer >= this.NumPlayers()) {
+                    pointer = 0;
+                }
+                count++;
             }
 
             return res;
@@ -159,5 +180,87 @@ public class GameState<T, U>
             } else {
                 return this.Discard.Peek();
             }
+        }
+
+        public PlayerProfile CurrentProfile() {
+            return this.Players[this.CurrentPlayer()].GetProfile();
+        }
+
+        public void NextPhase() {
+            if (this.Turn%this.Players.Length == this.Human) {
+                switch (this.GamePhase) {
+                    case Phase.OPPONENT:
+                        this.GamePhase = Phase.HUMAN_INIT;
+                        break;
+                    case Phase.HUMAN_INIT:
+                        this.GamePhase = Phase.HUMAN_PLAY;
+                        break;
+                    case Phase.HUMAN_PLAY:
+                        this.GamePhase = Phase.OPPONENT;
+                        break;
+                    default:
+                        throw new Exception("Undefined behaviour for game phase.");
+                }
+            }
+        }
+
+        public string GetPhaseStatus() {
+            if (this.IsHumanTurn()) {
+                return "It's human's turn";
+            } else {
+                return this.CurrentProfile().Name + "'s turn";
+            }
+        }
+
+        public int CurrentPlayer() {
+            return this.Turn%this.Players.Length;
+        }
+
+        public bool IsHumanTurn() {
+            return this.CurrentPlayer() == this.Human;
+        }
+
+        public ICard<T, U>? BotPick() {
+            // change the player inteface to only include the three phases.
+
+            /*
+            if (this.Discard.Count == 0) {
+                return null;
+            }
+            ICard<T, U> c = this.Discard.Peek();
+
+            this.Players[this.CurrentPlayer()].DoPickDiscard(this.Discard);
+
+            return c;
+            */
+            Console.WriteLine($"Stock: {this.Stock.Count}");
+            Console.WriteLine($"Discard: {this.Discard.Count}");
+            ICard<T, U> c = this.Stock.Peek();
+            this.Players[this.CurrentPlayer()].DoPickStock(this.Stock);
+
+            // stock returns null.
+            // discard returns card.
+            return null;
+        }
+
+        public ICard<T, U> BotDiscard() {
+            ICard<T, U> c = this.Players[this.CurrentPlayer()].DoShed(this.Discard);
+            return c;
+        }
+
+        public int NumPlayers() {
+            return this.Players.Length;
+        }
+
+        public int StockDepth() {
+            return this.Stock.Count;
+        }
+
+        public void NextTurn() {
+            this.Turn = (this.Turn + 1)%this.Players.Length;
+        }
+
+        public int HumanPos() {
+            return this.Human;
         }
     }

@@ -48,11 +48,19 @@ namespace Domain {
             }
 
             public int CompareRank(ICard<T, U> c) {
-                throw new Exception();
+                if (c.IsWild()) {
+                    return 0;
+                }
+
+                return 1;
             }
 
             public int CompareSuit(ICard<T, U> c) {
-                throw new Exception();
+                if (c.IsWild()) {
+                    return 0;
+                }
+
+                return 1;
             }
 
             public bool Equals(ICard<T, U> c) {
