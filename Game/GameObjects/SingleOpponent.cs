@@ -4,18 +4,17 @@ using SFML.Window;
 
 using Domain;
 using Game;
+using Animation;
 
 namespace GameObjects;
 
 class SingleOpponent {
-    private Sprite NameBg;
-    private Text Name;
-    private Text NumCards;
-    private Sprite BackCard;
+    private Sprite NameBg { get; }
+    private Text Name { get; }
+    private Text NumCards { get; set; }
+    private Sprite BackCard { get; set; }
+    private IAnimation<int> Animation { get; set; }
 
-    private Vector2f Velocity { get; set; }
-    private int NewNum { get; set; }
-    private Sprite? PickAnimation { get; set; }
     private const uint FontSize = 20;
     private const float VertOff = 0.0f;
 
@@ -30,7 +29,6 @@ class SingleOpponent {
             Position = new Vector2f(pos.X + 5.0f, pos.Y + VertOff)
         };
 
-        this.NewNum = profile.NumCards;
         this.NumCards = new Text(profile.NumCards.ToString(), FontUtils.StatusFont, FontSize) {
             FillColor = Color.Blue
             //Position = new Vector2f(pos.X + 93.0f, pos.Y + vertOff)
@@ -43,10 +41,12 @@ class SingleOpponent {
         this.BackCard = new Sprite(BackTex) {
             Position = new Vector2f(pos.X, pos.Y + (float)NameTex.Size.Y)
         };
+
+        this.Animation = new EmptyAnimation<int>();
     }
 
-    private void UpdateState() {
-        this.NumCards = new Text(this.NewNum.ToString(), FontUtils.StatusFont, FontSize) {
+    private void UpdateState(int num) {
+        this.NumCards = new Text(num.ToString(), FontUtils.StatusFont, FontSize) {
             FillColor = Color.Blue
         };
         float x = this.NameBg.Position.X + this.NameBg.GetGlobalBounds().Width - this.NumCards.GetGlobalBounds().Width/2.0f - 14.0f;
@@ -54,51 +54,47 @@ class SingleOpponent {
         this.NumCards.Position = new Vector2f(x, y);
     }
 
-    private Vector2f GetVelocity(Vector2f start, Vector2f finish, float times) {
-        float diffX = finish.X - start.X;
-        float diffY = finish.Y - start.Y;
-        float m = diffY/diffX;
-        float b = start.Y - (start.X*m);
-
-        float sqrX = diffX*diffX;
-        float sqrY = diffY*diffY;
-        float d = (float)Math.Sqrt((double)(sqrX + sqrY));
-
-        float distanceToMove = d/times;
-
-        float ux = diffX/d;
-        float uy = diffY/d;
-
-        return new Vector2f(distanceToMove*ux, distanceToMove*uy);
+    public void StartAnimation(OpponentAnim oa, Sprite sprite, Vector2f start, int newNum) {
+        switch (oa) {
+            case OpponentAnim.PICK:
+                this.Animation = new TransCardAnimation<int>(sprite, start, this.BackCard.Position, 1000.0f, newNum);
+                break;
+            case OpponentAnim.MELD:
+                break;
+            case OpponentAnim.DROP:
+                this.Animation = new TransCardAnimation<int>(sprite, this.BackCard.Position, start, 1000.0f, newNum);
+                break;
+        }
     }
 
-    private bool AreClose(Vector2f p1, Vector2f p2, Vector2f r) {
-        // Only for positive positions.
-        return ((Math.Abs(p1.X - p2.X) < r.X) &&
-                (Math.Abs(p1.Y - p2.Y) < r.Y));
-    }
-
-    public void StartAnimation(Sprite sprite, Vector2f pos, int newNum) {
-        this.NewNum = newNum;
-        this.PickAnimation = sprite;
-        this.PickAnimation.Position = pos;
-        this.Velocity = this.GetVelocity(pos, this.BackCard.Position, 500.0f);
+    public Vector2f GetCoords() {
+        return this.BackCard.Position;
     }
 
     public bool PlayAnimation() {
-        if (this.PickAnimation == null ||
-            this.AreClose(this.BackCard.Position, this.PickAnimation.Position, new Vector2f(10.0f, 10.0f))) {
+        bool res = this.Animation.RunAnimation();
+        if (!res) {
+            this.UpdateState(this.Animation.GetNewState());
+            this.Animation = new EmptyAnimation<int>();
+        }
+
+        return res;
+        /*
+        this.Animation.RunAnimation();
+        if (this.TransCardAnimation == null ||
+            this.AreClose(this.BackCard.Position, this.TransCardAnimation.Position, new Vector2f(10.0f, 10.0f))) {
             this.UpdateState();
-            this.PickAnimation = null;
+            this.TransCardAnimation = null;
             return false;
         }
 
-        this.PickAnimation.Position += this.Velocity;
+        this.TransCardAnimation.Position += this.Velocity;
         return true;
+        */
     }
 
-    public bool IsAnimating() {
-        return this.PickAnimation != null;
+    public void UpdateCount(int num) {
+        this.UpdateState(num);
     }
 
     public void Render(RenderWindow window) {
@@ -107,8 +103,6 @@ class SingleOpponent {
         window.Draw(this.NumCards);
         window.Draw(this.BackCard);
 
-        if (this.PickAnimation != null) {
-            window.Draw(this.PickAnimation);
-        }
+        this.Animation.Render(window);
     }
 }

@@ -98,4 +98,12 @@ public class DummyPlayer<T, U> : IPlayer<T, U>
         public void ShowHand() {
             this.Hand.Print();
         }
+
+        public bool HasComeOut() {
+            return this.CameOut;
+        }
+
+        public ArrayHand<T, U> GetHand() {
+            return this.Hand;
+        }
     }

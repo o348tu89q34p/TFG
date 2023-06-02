@@ -48,10 +48,10 @@ public class NaturalCard<T, U> : ICard<T, U>
 
         public void Next(bool wrap, bool inSuit) {
             if (this.Rank.IsLast() && !wrap && inSuit) {
-                throw new Exception("No wrap in suit.");
+                throw new ArgumentException("No wrap in suit.");
             }
             if (this.IsLast() && !wrap) {
-                throw new Exception("Cannot prev first card without wrap.");
+                throw new ArgumentException("Cannot prev first card without wrap.");
             }
 
             if (this.Rank.IsLast() && !inSuit) {
@@ -63,10 +63,10 @@ public class NaturalCard<T, U> : ICard<T, U>
 
         public void Prev(bool wrap, bool inSuit) {
             if (this.Rank.IsFirst() && !wrap && inSuit) {
-                throw new Exception("No wrap in suit.");
+                throw new ArgumentException("No wrap in suit.");
             }
             if (this.IsFirst() && !wrap) {
-                throw new Exception("Cannot prev first card without wrap.");
+                throw new ArgumentException("Cannot prev first card without wrap.");
             }
 
             if (this.Rank.IsFirst() && !inSuit) {

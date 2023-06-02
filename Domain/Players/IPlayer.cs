@@ -18,6 +18,8 @@ public interface IPlayer<T, U>
         void Add(ICard<T, U> card);
 
         PlayerProfile GetProfile();
+        bool HasComeOut();
+        ArrayHand<T, U> GetHand();
 
         /*
           REMOVE THESE FROM THE CLASSES THAT IMPLEMENT IPLAYER.

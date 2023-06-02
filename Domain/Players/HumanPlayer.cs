@@ -202,11 +202,16 @@ public class HumanPlayer<T, U> : IPlayer<T, U>
           this.Hand.Print();
           }
         */
-        public ArrayHand<T, U> GetHand() {
-            return this.Hand;
-        }
 
         public PlayerProfile GetProfile() {
             return new PlayerProfile(this.Name, this.Hand.Size());
+        }
+
+        public bool HasComeOut() {
+            return this.CameOut;
+        }
+
+        public ArrayHand<T, U> GetHand() {
+            return this.Hand;
         }
     }

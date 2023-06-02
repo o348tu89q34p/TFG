@@ -1,24 +1,18 @@
 namespace Domain;
 
-public enum Phase {
-    OPPONENT,
-    HUMAN_INIT,
-    HUMAN_PLAY
-}
-
 public class GameState<T, U>
     where T : Scale, new()
     where U : Scale, new()
     {
         private Rules<T, U> Rules { get; }
-        private IPlayer<T, U>[] Players { get; }
+        private SinglePlayer<T, U>[] Players { get; }
         private Stack<ICard<T, U>> Stock;
         private Stack<ICard<T, U>> Discard;
         private List<IMeld<T, U>> Melds;
         private int Turn { get; set; }
         // private int Round { get; set; }
         private int Human { get; set; }
-        public Phase GamePhase { get; private set; }
+        private Brain<T, U> Ai { get; }
 
         public GameState(Rules<T, U> rules) {
             // rules have been validated on creation
@@ -30,17 +24,16 @@ public class GameState<T, U>
             // this.Round = 0;
 
             // Create the players.
-            this.Players = new IPlayer<T, U>[this.Rules.NumPlayers];
+            this.Players = new SinglePlayer<T, U>[this.Rules.NumPlayers];
 
             // Change this when randomizing the turn.
             this.Human = 0;
-            this.Players[0] = new HumanPlayer<T, U>(this.Rules.PlayerR, "Human");
+            this.Players[0] = new SinglePlayer<T, U>(this.Rules.PlayerR, "Human");
             int nCards = this.Rules.PlayerR.NumCards;
             for (int i = 1; i < this.Rules.NumPlayers; i++) {
-                this.Players[i] = new DummyPlayer<T, U>(this.Rules.PlayerR, "bot_" + i);
+                this.Players[i] = new SinglePlayer<T, U>(this.Rules.PlayerR, "bot_" + i);
             }
 
-            /*
             // Deal cards.
             // This deals nCards to each player.
             for (int i = 0; i < Rules.NumPlayers; i++) {
@@ -48,40 +41,37 @@ public class GameState<T, U>
                     this.Players[i].Add(this.Stock.Pop());
                 }
             }
-            */
 
-            this.SufflePlayers();
-
+            /*
             // This deals nCards times one card per player.
             for (int i = 0; i < nCards; i++) {
                 for (int j = 0; j < Rules.NumPlayers; j++) {
                     this.Players[j].Add(this.Stock.Pop());
                 }
             }
+            */
+
+            this.SufflePlayers();
 
             if (!this.Rules.PlayerR.NeedsOut) {
                 this.Discard.Push(this.Stock.Pop());
             }
 
-            if (this.Players[0] is HumanPlayer<T, U>) {
-                this.GamePhase = Phase.HUMAN_INIT;
-            } else {
-                this.GamePhase = Phase.OPPONENT;
-            }
+            this.Ai = new Brain<T, U>(rules);
         }
 
         private void SufflePlayers() {
             int n = this.Players.Length;
             int r;
             Random rnd = new Random();
-            IPlayer<T, U> aux;
+            SinglePlayer<T, U> aux;
 
             for (int i = 0; i < n; i++) {
                 r = rnd.Next(i, n);
                 aux = this.Players[i];
                 this.Players[i] = this.Players[r];
                 this.Players[r] = aux;
-                if (this.Players[i] is HumanPlayer<T, U>) {
+                if (this.Players[i].GetProfile().Name.Equals("Human")) {
                     this.Human = i;
                 }
             }
@@ -115,6 +105,7 @@ public class GameState<T, U>
             }
         }
 
+        /*
         public void Update() {
             this.FilpDiscard();
 
@@ -146,10 +137,11 @@ public class GameState<T, U>
 
             Console.WriteLine($"{this.Players[this.Turn%4]} won the game.");
         }
+        */
 
         // Maybe this can just return coords that it asks to the player.
-        public ArrayHand<T, U> HumanHand() {
-            return ((HumanPlayer<T, U>)this.Players[this.Human]).GetHand();
+        public List<ICard<T, U>> HumanHand() {
+            return this.Players[this.Human].GetCards();
         }
 
         public List<PlayerProfile> GetOpponents() {
@@ -183,69 +175,44 @@ public class GameState<T, U>
         }
 
         public PlayerProfile CurrentProfile() {
-            return this.Players[this.CurrentPlayer()].GetProfile();
+            return this.Players[this.CurrentPlayerPos()].GetProfile();
         }
 
-        public void NextPhase() {
-            if (this.Turn%this.Players.Length == this.Human) {
-                switch (this.GamePhase) {
-                    case Phase.OPPONENT:
-                        this.GamePhase = Phase.HUMAN_INIT;
-                        break;
-                    case Phase.HUMAN_INIT:
-                        this.GamePhase = Phase.HUMAN_PLAY;
-                        break;
-                    case Phase.HUMAN_PLAY:
-                        this.GamePhase = Phase.OPPONENT;
-                        break;
-                    default:
-                        throw new Exception("Undefined behaviour for game phase.");
-                }
-            }
+        public SinglePlayer<T, U> CurrentPlayer() {
+            return this.Players[this.CurrentPlayerPos()];
         }
 
-        public string GetPhaseStatus() {
-            if (this.IsHumanTurn()) {
-                return "It's human's turn";
-            } else {
-                return this.CurrentProfile().Name + "'s turn";
-            }
-        }
-
-        public int CurrentPlayer() {
+        public int CurrentPlayerPos() {
             return this.Turn%this.Players.Length;
         }
 
         public bool IsHumanTurn() {
-            return this.CurrentPlayer() == this.Human;
+            return this.CurrentPlayerPos() == this.Human;
         }
 
-        public ICard<T, U>? BotPick() {
-            // change the player inteface to only include the three phases.
+        public string TurnStatus() {
+            return this.CurrentPlayer().GetProfile().Name + "'s turn.";
+        }
 
-            /*
-            if (this.Discard.Count == 0) {
+        public ResultMove<ICard<T, U>> BotPick() {
+            this.CurrentPlayer().UpdateMove(this.Ai.MakePick(this.CurrentPlayer()));
+            return this.CurrentPlayer().MakePlay(this.Rules, this.Stock, this.Discard, this.Melds);
+        }
+
+        public ResultMove<ICard<T, U>>? BotPlay() {
+            ResultMove<int>? play = this.Ai.MakePlay(this.CurrentPlayer());
+
+            if (play == null) {
                 return null;
             }
-            ICard<T, U> c = this.Discard.Peek();
 
-            this.Players[this.CurrentPlayer()].DoPickDiscard(this.Discard);
-
-            return c;
-            */
-            Console.WriteLine($"Stock: {this.Stock.Count}");
-            Console.WriteLine($"Discard: {this.Discard.Count}");
-            ICard<T, U> c = this.Stock.Peek();
-            this.Players[this.CurrentPlayer()].DoPickStock(this.Stock);
-
-            // stock returns null.
-            // discard returns card.
-            return null;
+            this.CurrentPlayer().UpdateMove(play);
+            return this.CurrentPlayer().MakePlay(this.Rules, this.Stock, this.Discard, this.Melds);
         }
 
-        public ICard<T, U> BotDiscard() {
-            ICard<T, U> c = this.Players[this.CurrentPlayer()].DoShed(this.Discard);
-            return c;
+        public ResultMove<ICard<T, U>> BotDiscard() {
+            this.CurrentPlayer().UpdateMove(this.Ai.MakeDiscard(this.CurrentPlayer()));
+            return this.CurrentPlayer().MakePlay(this.Rules, this.Stock, this.Discard, this.Melds);
         }
 
         public int NumPlayers() {
@@ -262,5 +229,13 @@ public class GameState<T, U>
 
         public int HumanPos() {
             return this.Human;
+        }
+
+        public (string?, ResultMove<ICard<T, U>>?) HumanPlay(ResultMove<int> move) {
+            try {
+                return (null, this.CurrentPlayer().MakePlay(this.Rules, this.Stock, this.Discard, this.Melds));
+            } catch (InvalidCastException e) {
+                return (e.Message, null);
+            }
         }
     }

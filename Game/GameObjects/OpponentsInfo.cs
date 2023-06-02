@@ -37,20 +37,20 @@ public class OpponentsInfo {
         }
     }
 
-    public void StartAnim(int i, Sprite sprite, Vector2f pos, PlayerProfile profile) {
-        this.Opponents.ElementAt(i).StartAnimation(sprite, pos, profile.NumCards);
+    public void StartAnimation(int i, Sprite sprite, Vector2f pos, PlayerProfile profile, OpponentAnim oa) {
+        this.Opponents.ElementAt(i).StartAnimation(oa, sprite, pos, profile.NumCards);
     }
 
-    public bool PlayAnimation() {
-        bool res = false;
+    public bool PlayAnimation(int pos) {
+        return this.Opponents.ElementAt(pos).PlayAnimation();
+    }
 
-        foreach (var opp in this.Opponents) {
-            if (opp.IsAnimating()) {
-                res = res || opp.PlayAnimation();
-            }
-        }
+    public Vector2f Spot(int i) {
+        return this.Opponents.ElementAt(i).GetCoords();
+    }
 
-        return res;
+    public void UpdateInfo(int pos, PlayerProfile profile) {
+        this.Opponents[pos].UpdateCount(profile.NumCards);
     }
 
     public void Render(RenderWindow window) {
