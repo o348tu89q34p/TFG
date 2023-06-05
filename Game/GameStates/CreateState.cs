@@ -33,11 +33,11 @@ namespace Game {
             float rTop = 150.0f;
             float space = 70.0f;
 
-            var optDeck = new NextableStrings(new string[]{"Espanyola", "Francesa"}, 0);
+            var optDeck = new NextableStrings(new string[]{"Espanyola", "Francesa"}, 1);
             this.OptDeck = new NextOption<Nextable<string>, string>("Tipus de baralla", optDeck, new Vector2f(xLeft, lTop + space));
             lTop += space;
 
-            var optNumPlayers = new NextableInt(2, 8, 2);
+            var optNumPlayers = new NextableInt(2, 8, 3);
             this.OptNumPlayers = new NextOption<Nextable<int>, int>("Nombre de jugadors", optNumPlayers, new Vector2f(xLeft, lTop + space));
             lTop += space;
 

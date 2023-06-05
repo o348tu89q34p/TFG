@@ -38,6 +38,9 @@ public class Brain<T, U> where T : Scale, new() where U : Scale, new()
 
         for (int i = 1; i < cards.Count; i++) {
             ICard<T, U> c = cards.ElementAt(i).Item1;
+            if (c.IsWild()) {
+                return null;
+            }
             if (pointer == null || prev == null) {
                 pointer = ICard<T, U>.Copy(c);
                 prev = c;

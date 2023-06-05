@@ -4,8 +4,9 @@ namespace Game {
     public static class FontUtils {
         private const string fontPath = "../Assets/Fonts/";
         public const string TitleFont = fontPath + "aAhaWow.ttf";
-        public const string TextFont1 = fontPath + "LinLibertine_aBS.ttf";
-        public static Font StatusFont = new Font(fontPath + "LinLibertine_aBS.ttf");
+        //public const string TextFont1 = fontPath + "LinLibertine_aBS.ttf";
+        public const string TextFont1 = fontPath + "Garute-Medium.ttf";
+        public static Font StatusFont = new Font(fontPath + "Garute-Medium.ttf");
         public static Font ButtonFont = new Font(fontPath + "Bebas-Regular.ttf");
     }
 
@@ -13,15 +14,32 @@ namespace Game {
         // Buttons.
         private const string ButtonTexturePath = "../Assets/Graphics/UI/Buttons/";
 
+        private const string Background = "../Assets/Graphics/UI/bg1.png";
+        public static Texture BackgroundTexture = new Texture(Background);
+
         private const string ActionIdle = ButtonTexturePath + "action_idle.png";
         private const string ActionHover = ButtonTexturePath + "action_hover.png";
         private const string ActionActive = ButtonTexturePath + "action_active.png";
         private const string ActionDisabled = ButtonTexturePath + "action_disabled.png";
 
+        private const string Regular = ButtonTexturePath + "regular.png";
+        private const string RegularHover = ButtonTexturePath + "regular_hover.png";
+        private const string Square = ButtonTexturePath + "square_base.png";
+        private const string SquareHover = ButtonTexturePath + "square_hover.png";
+        private const string SortRun = ButtonTexturePath + "sort_run.png";
+        private const string SortSet = ButtonTexturePath + "sort_set.png";
+
         public static Texture IdleTexture = new Texture(TextureUtils.ActionIdle);
         public static Texture HoverTexture = new Texture(TextureUtils.ActionHover);
         public static Texture ActiveTexture = new Texture(TextureUtils.ActionActive);
         public static Texture DisabledTexture = new Texture(TextureUtils.ActionDisabled);
+
+        public static Texture RegularTexture = new Texture(Regular);
+        public static Texture RegularHoverTexture = new Texture(RegularHover);
+        public static Texture SquareTexture = new Texture(Square);
+        public static Texture SquareHoverTexture = new Texture(SquareHover);
+        public static Texture SortRunTexture = new Texture(SortRun);
+        public static Texture SortSetTexture = new Texture(SortSet);
 
         // Cards.
         private const string CardPath = "../Assets/Graphics/Cards/";

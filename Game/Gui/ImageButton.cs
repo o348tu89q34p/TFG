@@ -10,6 +10,7 @@ public class ImageButton {
     private Text Contents { get; }
     private Sprite CurrentSprite { get; set; }
     private ButtonState State { get; set; }
+    public bool Hovering { get; private set; }
 
     public ImageButton(string contents, Vector2f pos) {
         this.Contents = new Text(contents, FontUtils.ButtonFont, 30) {
@@ -20,6 +21,7 @@ public class ImageButton {
         this.CurrentSprite.Position = PosOps.ComputeOrigin(pos, this.CurrentSprite.GetGlobalBounds(), Origin.BOTTOMRIGHT);
 
         this.State = ButtonState.BTN_IDLE;
+        this.Hovering = false;
 
         this.ContentsPosition();
     }
@@ -44,29 +46,44 @@ public class ImageButton {
         };
     }
 
-    public void Enable() {
+    public void Activate() {
+        this.State = ButtonState.BTN_ACTIVE;
+    }
+
+    public void Deactivate() {
         this.State = ButtonState.BTN_IDLE;
+    }
+
+    public void Enable() {
+        if (!this.IsActivated()) {
+            this.State = ButtonState.BTN_IDLE;
+        }
     }
 
     public void Disable() {
         this.State = ButtonState.BTN_DISABLED;
     }
 
-    private bool IsActive() {
+    public bool IsEnabled() {
         return this.State != ButtonState.BTN_DISABLED;
+    }
+
+    public bool IsActivated() {
+        return this.State == ButtonState.BTN_ACTIVE;
     }
 
     public void Update(RenderWindow window) {
         Vector2f mouse = window.MapPixelToCoords(Mouse.GetPosition(window));
         FloatRect bounds = this.CurrentSprite.GetGlobalBounds();
 
-        if (this.IsActive()) {
-            this.State = ButtonState.BTN_IDLE;
-            if (bounds.Contains(mouse.X, mouse.Y)) {
+        this.Hovering = bounds.Contains(mouse.X, mouse.Y);
+        if (this.IsEnabled()) {
+            if (this.IsActivated()) {
+                this.State = ButtonState.BTN_ACTIVE;
+            } else if (!this.IsActivated() && this.Hovering) {
                 this.State = ButtonState.BTN_HOVER;
-                if (Mouse.IsButtonPressed(Mouse.Button.Left)) {
-                    this.State = ButtonState.BTN_ACTIVE;
-                }
+            } else {
+                this.State = ButtonState.BTN_IDLE;
             }
         } else {
             this.State = ButtonState.BTN_DISABLED;

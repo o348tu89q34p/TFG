@@ -37,18 +37,17 @@ public class OpponentsInfo {
         }
     }
 
-    public void StartAnimation(int i, Sprite sprite, Vector2f pos, PlayerProfile profile, OpponentAnim oa) {
-        this.Opponents.ElementAt(i).StartAnimation(oa, sprite, pos, profile.NumCards);
+    // Debug method
+    public int GetCards(int i) {
+        return this.Opponents[i].GetCards();
     }
 
-    public bool PlayAnimation(int pos) {
-        return this.Opponents.ElementAt(pos).PlayAnimation();
-    }
-
-    public Vector2f Spot(int i) {
+    // Get the position of the card sprite form the given opponent.
+    public Vector2f GetCardPosition(int i) {
         return this.Opponents.ElementAt(i).GetCoords();
     }
 
+    // Update the number of cards that an opponent has.
     public void UpdateInfo(int pos, PlayerProfile profile) {
         this.Opponents[pos].UpdateCount(profile.NumCards);
     }

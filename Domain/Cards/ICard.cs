@@ -19,6 +19,8 @@ namespace Domain {
             int CompareTo(ICard<T, U> c);
             int CompareRank(ICard<T, U> c);
             int CompareSuit(ICard<T, U> c);
+            int SortCompareRank(ICard<T, U> c);
+            int SortCompareSuit(ICard<T, U> c);
             bool Equals(ICard<T, U> c);
 
             (int, int) Coords();

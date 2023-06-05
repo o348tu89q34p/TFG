@@ -74,16 +74,39 @@ public class SinglePlayer<T, U> where T : Scale, new() where U : Scale, new()
         try {
             var mr = new MeldRun<T, U>(cards, rules.MeldR);
             if (rules.EndDiscard && cards.Size() == this.Hand.Size()) {
-                throw new InvalidCastException("The last card must be discaded.");
+                throw new InvalidOperationException("The last card must be discaded.");
             }
             melds.Add(mr);
         } catch {
-            // TODO
-            Console.WriteLine("Broken meld:");
-            for (int i = 0; i < this.Move.CardsMoved.Count; i++) {
-                this.Hand.GetAt(this.Move.CardsMoved.ElementAt(i)).Print();
+            throw new InvalidOperationException("The cards given don't form a valid run.");
+        }
+
+        this.Dispose(this.Move.CardsMoved);
+
+        return new ResultMove<ICard<T, U>>(this.Move.Move, retCards, null, null);
+    }
+
+    private ResultMove<ICard<T, U>> MakeSet(Rules<T, U> rules, List<IMeld<T, U>> melds) {
+        if (!this.HasPicked) {
+            throw new InvalidOperationException("You must pick a card before doing any other action.");
+        }
+
+        var twoLists = this.GetCards(this.Move.CardsMoved);
+        ArrayHand<T, U> cards = twoLists.Item1;
+        List<ICard<T, U>> retCards = twoLists.Item2;
+
+        try {
+            var mr = new MeldSet<T, U>(cards, rules.MeldR);
+            if (rules.EndDiscard && cards.Size() == this.Hand.Size()) {
+                throw new InvalidOperationException("The last card must be discaded.");
             }
-            throw new InvalidCastException("The cards given don't form a valid run.");
+            melds.Add(mr);
+        } catch (Exception e) {
+            for (int i = 0; i < cards.Size(); i++) {
+                cards.GetAt(i).Print();
+            }
+            //throw new InvalidOperationException("The cards given don't form a valid set.");
+            throw new InvalidOperationException(e.Message);
         }
 
         this.Dispose(this.Move.CardsMoved);
@@ -96,7 +119,7 @@ public class SinglePlayer<T, U> where T : Scale, new() where U : Scale, new()
         ICard<T, U> card = this.Hand.GetAt(pos);
 
         if (this.Picked != null && this.Picked == card) {
-            throw new InvalidCastException("Cannot discard the picked card if it's from the discard pile.");
+            throw new InvalidOperationException("Cannot discard the picked card if it's from the discard pile.");
         }
 
         discard.Push(card);
@@ -118,6 +141,8 @@ public class SinglePlayer<T, U> where T : Scale, new() where U : Scale, new()
                 return this.MakePickDiscard(discard);
             case MoveKind.RUN:
                 return this.MakeRun(rules, melds);
+            case MoveKind.SET:
+                return this.MakeSet(rules, melds);
             case MoveKind.SHED:
                 return this.MakeShed(discard);
             default:
@@ -170,5 +195,17 @@ public class SinglePlayer<T, U> where T : Scale, new() where U : Scale, new()
         for (int i = 0; i < positions.Count; i++) {
             this.Hand.RemoveAt(positions[i] - i);
         }
+    }
+
+    public bool HasWon() {
+        return this.Hand.Size() == 0;
+    }
+
+    public void SortForRun() {
+        this.Hand.SortRuns();
+    }
+
+    public void SortForSet() {
+        this.Hand.SortSets();
     }
 }

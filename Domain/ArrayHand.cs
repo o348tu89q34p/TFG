@@ -164,11 +164,11 @@ namespace Domain {
         }
 
         public void SortRuns() {
-            this.Hand.Sort((x, y) => x.CompareTo(y));
+            this.Hand.Sort((x, y) => x.SortCompareSuit(y));
         }
 
         public void SortSets() {
-            this.Hand.Sort((x, y) => x.CompareRank(y));
+            this.Hand.Sort((x, y) => x.SortCompareRank(y));
         }
     }
 }

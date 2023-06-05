@@ -77,67 +77,14 @@ public class GameState<T, U>
             }
         }
 
-        private void PrintMelds() {
-            Console.WriteLine("Melds:");
-            for (int i = 0; i < this.Melds.Count; i++) {
-                Console.WriteLine($"- {this.Melds.ElementAt(i).Type()} {i}");
-                this.Melds.ElementAt(i).Print();
-            }
-        }
-
-        private void PrintPiles() {
-            Console.WriteLine("Piles:");
-            Console.WriteLine($"Stock: ({this.Stock.Count})");
-
-            Console.Write($"Discard: ");
-            if (this.Discard.Count == 0) {
-                Console.WriteLine("--empty--");
-            } else {
-                this.Discard.Peek().Print();
-            }
-        }
-
-        private void FilpDiscard() {
-            if (this.Stock.Count == 0) {
-                foreach (ICard<T, U> c in this.Discard) {
-                    this.Stock.Push(c);
+        public void FilpDiscard() {
+            if (this.Stock.Count <= 0) {
+                ICard<T, U> top = this.Discard.Pop();
+                while (this.Discard.Count > 0) {
+                    this.Stock.Push(this.Discard.Pop());
                 }
             }
         }
-
-        /*
-        public void Update() {
-            this.FilpDiscard();
-
-            IPlayer<T, U> p = this.Players[this.Turn%this.Players.Length];
-            PlayerAction pa = p.ChooseAction();
-
-            if (pa == PlayerAction.PickStock) {
-                p.DoPickStock(this.Stock);
-            } else if (pa == PlayerAction.PickDiscard) {
-                p.DoPickDiscard(this.Discard);
-            } else if (pa == PlayerAction.MeldRun) {
-                Console.WriteLine("Choose to meld a run.");
-                p.DoMeldRun(this.Rules, this.Melds);
-            } else if (pa == PlayerAction.MeldSet) {
-                Console.WriteLine("Choose to meld a set.");
-                p.DoMeldSet(this.Rules, this.Melds);
-            } else if (pa == PlayerAction.LayOff) {
-                Console.WriteLine("Choos the cards to lay off.");
-                p.DoLayOff(this.Melds);
-            } else if (pa == PlayerAction.Replace) {
-                p.DoReplace(this.Melds);
-            }
-            else if (pa == PlayerAction.Discard) {
-                p.DoShed(this.Discard);
-                this.Turn++;
-            } else {
-                Console.WriteLine("Unknown action");
-            }
-
-            Console.WriteLine($"{this.Players[this.Turn%4]} won the game.");
-        }
-        */
 
         // Maybe this can just return coords that it asks to the player.
         public List<ICard<T, U>> HumanHand() {
@@ -233,9 +180,22 @@ public class GameState<T, U>
 
         public (string?, ResultMove<ICard<T, U>>?) HumanPlay(ResultMove<int> move) {
             try {
+                this.CurrentPlayer().UpdateMove(move);
                 return (null, this.CurrentPlayer().MakePlay(this.Rules, this.Stock, this.Discard, this.Melds));
-            } catch (InvalidCastException e) {
+            } catch (InvalidOperationException e) {
                 return (e.Message, null);
             }
+        }
+
+        public bool CurrentHasWon() {
+            return this.CurrentPlayer().HasWon();
+        }
+
+        public void HumanSortRun() {
+            this.Players[this.Human].SortForRun();
+        }
+
+        public void HumanSortSet() {
+            this.Players[this.Human].SortForSet();
         }
     }

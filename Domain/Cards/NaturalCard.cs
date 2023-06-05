@@ -21,6 +21,7 @@ public class NaturalCard<T, U> : ICard<T, U>
                     this.Rank.IsLast());
         }
 
+        // Don't need this.
         public bool IsWithin(NaturalCard<T, U> a, NaturalCard<T, U> b) {
             if ((this.GetSuit().CompareTo(a.GetSuit()) != 0) ||
                 (this.GetSuit().CompareTo(b.GetSuit()) != 0))
@@ -78,7 +79,7 @@ public class NaturalCard<T, U> : ICard<T, U>
 
         public int CompareTo(ICard<T, U> c) {
             if (c is WildCard<T, U>) {
-                return 1;
+                return -1;
             }
 
             var nc = (NaturalCard<T, U>)c;
@@ -92,18 +93,48 @@ public class NaturalCard<T, U> : ICard<T, U>
 
         public int CompareRank(ICard<T, U> c) {
             if (c is WildCard<T, U>) {
-                throw new ArgumentException("Cannot compare a natural's rank with a wild card.");
+                return -1;
             }
 
-            return c.GetRank().CompareTo(c.GetRank());
+            var nc = (NaturalCard<T, U>)c;
+            return this.GetRank().CompareTo(nc.GetRank());
         }
 
         public int CompareSuit(ICard<T, U> c) {
             if (c is WildCard<T, U>) {
-                throw new ArgumentException("Cannot compare a natural's suit with a wild card.");
+                return -1;
             }
 
-            return c.GetSuit().CompareTo(c.GetSuit());
+            var nc = (NaturalCard<T, U>)c;
+            return this.GetSuit().CompareTo(nc.GetSuit());
+        }
+
+        public int SortCompareRank(ICard<T, U> c) {
+            if (c is WildCard<T, U>) {
+                return -1;
+            }
+
+            var nc = (NaturalCard<T, U>)c;
+            int res = this.GetRank().CompareTo(nc.GetRank());
+            if (res == 0) {
+                return this.GetSuit().CompareTo(nc.GetSuit());
+            }
+
+            return res;
+        }
+
+        public int SortCompareSuit(ICard<T, U> c) {
+            if (c is WildCard<T, U>) {
+                return -1;
+            }
+
+            var nc = (NaturalCard<T, U>)c;
+            int res = this.GetSuit().CompareTo(nc.GetSuit());
+            if (res == 0) {
+                return this.GetRank().CompareTo(nc.GetRank());
+            }
+
+            return res;
         }
 
         public bool Equals(ICard<T, U> c) {

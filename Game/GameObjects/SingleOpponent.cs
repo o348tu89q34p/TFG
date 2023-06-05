@@ -10,15 +10,16 @@ namespace GameObjects;
 
 class SingleOpponent {
     private Sprite NameBg { get; }
+    private int Amount { get; set; }
     private Text Name { get; }
     private Text NumCards { get; set; }
     private Sprite BackCard { get; set; }
-    private IAnimation<int> Animation { get; set; }
 
     private const uint FontSize = 20;
     private const float VertOff = 0.0f;
 
     public SingleOpponent(PlayerProfile profile, Vector2f pos) {
+        this.Amount = profile.NumCards;
         Texture NameTex = TextureUtils.NamePlateTexture;
         this.NameBg = new Sprite(NameTex) {
             Position = new Vector2f(pos.X, pos.Y)
@@ -41,11 +42,10 @@ class SingleOpponent {
         this.BackCard = new Sprite(BackTex) {
             Position = new Vector2f(pos.X, pos.Y + (float)NameTex.Size.Y)
         };
-
-        this.Animation = new EmptyAnimation<int>();
     }
 
-    private void UpdateState(int num) {
+    public void UpdateCount(int num) {
+        this.Amount = num;
         this.NumCards = new Text(num.ToString(), FontUtils.StatusFont, FontSize) {
             FillColor = Color.Blue
         };
@@ -54,47 +54,13 @@ class SingleOpponent {
         this.NumCards.Position = new Vector2f(x, y);
     }
 
-    public void StartAnimation(OpponentAnim oa, Sprite sprite, Vector2f start, int newNum) {
-        switch (oa) {
-            case OpponentAnim.PICK:
-                this.Animation = new TransCardAnimation<int>(sprite, start, this.BackCard.Position, 1000.0f, newNum);
-                break;
-            case OpponentAnim.MELD:
-                break;
-            case OpponentAnim.DROP:
-                this.Animation = new TransCardAnimation<int>(sprite, this.BackCard.Position, start, 1000.0f, newNum);
-                break;
-        }
-    }
-
     public Vector2f GetCoords() {
         return this.BackCard.Position;
     }
 
-    public bool PlayAnimation() {
-        bool res = this.Animation.RunAnimation();
-        if (!res) {
-            this.UpdateState(this.Animation.GetNewState());
-            this.Animation = new EmptyAnimation<int>();
-        }
-
-        return res;
-        /*
-        this.Animation.RunAnimation();
-        if (this.TransCardAnimation == null ||
-            this.AreClose(this.BackCard.Position, this.TransCardAnimation.Position, new Vector2f(10.0f, 10.0f))) {
-            this.UpdateState();
-            this.TransCardAnimation = null;
-            return false;
-        }
-
-        this.TransCardAnimation.Position += this.Velocity;
-        return true;
-        */
-    }
-
-    public void UpdateCount(int num) {
-        this.UpdateState(num);
+    // Debug method
+    public int GetCards() {
+        return this.Amount;
     }
 
     public void Render(RenderWindow window) {
@@ -102,7 +68,5 @@ class SingleOpponent {
         window.Draw(this.Name);
         window.Draw(this.NumCards);
         window.Draw(this.BackCard);
-
-        this.Animation.Render(window);
     }
 }

@@ -44,7 +44,7 @@ namespace Domain {
                     return 0;
                 }
 
-                return -1;
+                return 1;
             }
 
             public int CompareRank(ICard<T, U> c) {
@@ -56,6 +56,22 @@ namespace Domain {
             }
 
             public int CompareSuit(ICard<T, U> c) {
+                if (c.IsWild()) {
+                    return 0;
+                }
+
+                return 1;
+            }
+
+            public int SortCompareRank(ICard<T, U> c) {
+                if (c.IsWild()) {
+                    return 0;
+                }
+
+                return 1;
+            }
+
+            public int SortCompareSuit(ICard<T, U> c) {
                 if (c.IsWild()) {
                     return 0;
                 }
