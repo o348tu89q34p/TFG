@@ -12,5 +12,6 @@ Branca corresponent al lliurable parcial produït a la PAC 3.
 ## Comandes
 cd Client  
 dotnet build -c Release  
+move ..\Assets bin\Release
 bin/Release/net6.0/Client.exe  
   
