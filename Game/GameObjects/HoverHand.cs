@@ -22,6 +22,7 @@ public class HoverHand {
     }
 
     public void Add(GraphicCard card, int n) {
+        card.Take();
         card.DeHover();
         this.Cards.Add(card);
         this.Positions.Add(n);
@@ -41,6 +42,10 @@ public class HoverHand {
         return this.Cards;
     }
 
+    public int Size() {
+        return this.Cards.Count;
+    }
+
     public List<int> GetPositions() {
         return this.Positions;
     }
@@ -54,6 +59,19 @@ public class HoverHand {
         float height = this.Canvas.Y - TextureUtils.CardHeight*2.0f - 60.0f;
         for (int i = 0; i < n; i++) {
             this.Cards[i].UpdatePosition(new Vector2f(start + (this.SpriteDims.X + offset)*i, height));
+        }
+    }
+
+    public void Demote(int pos) {
+        for (int i = 0; i < this.Cards.Count; i++) {
+            if (pos == this.Positions[i]) {
+                Console.WriteLine("Just demoted");
+                this.Cards[i].UnTake();
+                this.Cards.RemoveAt(i);
+                this.Positions.RemoveAt(i);
+                this.Rearrange();
+                return;
+            }
         }
     }
 

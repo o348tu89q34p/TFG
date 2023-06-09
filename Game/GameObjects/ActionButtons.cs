@@ -40,6 +40,7 @@ class SpecificAction {
         if (this.Button.IsActivated()) {
             return this.Action;
         }
+
         return Step.HUM_PLAY;
     }
 
@@ -79,22 +80,19 @@ public class ActionButtons {
         }
     }
 
-    public Step OnMouseButtonPress(object? sender, MouseButtonEventArgs e) {
+    public (bool, Step) OnMouseButtonPress(object? sender, MouseButtonEventArgs e) {
         if (sender == null) {
-            return Step.HUM_PLAY;
+            return (false, Step.HUM_PLAY);
         }
 
-        Step res = Step.HUM_PLAY;
-
-        for (int i = 0; i < this.Elems.Count; i++) {
+        for (int i = this.Elems.Count - 1; i >= 0; i--) {
             Step s = this.Elems[i].OnMouseButtonPress(sender, e);
             if (s != Step.HUM_PLAY) {
-                res = s;
-                return res;
+                return (false, s);
             }
         }
 
-        return Step.HUM_PLAY;
+        return (true, Step.HUM_PLAY);
     }
 
     public void Update(RenderWindow window, Step step) {

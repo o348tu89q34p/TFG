@@ -2,40 +2,36 @@ using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
-using Domain;
 using Game;
 
 namespace GameObjects;
 
 public class GraphicMelds {
     private List<GraphicMeld> Melds { get; }
-    private float Middle { get; }
+    private Vector2f Canvas { get; }
 
     public GraphicMelds(RenderWindow window) {
         this.Melds = new List<GraphicMeld>();
-        this.Middle = (float)window.Size.X/2.0f;
+        this.Canvas = new Vector2f(window.Size.X, window.Size.Y);
     }
 
-    public void AddMeld(List<Sprite> cards) {
-        this.Melds.Add(new GraphicMeld(cards, this.Middle, this.Melds.Count + 1, this.Melds.Count));
-
-        /*
-        for (int i = 0; i < this.Melds.Count; i++) {
-            this.Melds[i].UpdatePositions(this.Middle, this.Melds.Count, i);
+    // Done only after a change in the melds representation has occured.
+    public void UpdateMelds(List<List<Sprite>> melds) {
+        this.Melds.Clear();
+        for (int i = 0; i < melds.Count; i++) {
+            this.Melds.Add(new GraphicMeld(melds[i], this.Canvas, melds.Count, i));
         }
-        */
     }
 
-    // Return the selected meld and specific card in it;
+    // Returns the meld and card in it that are currently selected.
     public (int?, int?) GetSelected() {
-        int i = 0;
-        foreach (GraphicMeld m in this.Melds) {
-            (int? col, int? item) = m.SelectedParts();
+        for (int i = 0; i < this.Melds.Count; i++) {
+            (int? col, int? item) = this.Melds[i].SelectedParts();
             if (col != null || item != null) {
                 return (col, item);
             }
-            i++;
         }
+
         return (null, null);
     }
 
@@ -49,21 +45,22 @@ public class GraphicMelds {
 
         if (anyHover) {
             foreach (GraphicMeld m in this.Melds) {
-                m.ToggleBigSelector(step);
+                m.ToggleSelector();
             }
         }
     }
 
     public void Update(RenderWindow window, Step step) {
         for (int i = 0; i < this.Melds.Count; i++) {
-            this.Melds[i].UpdatePositions(this.Middle, this.Melds.Count, i);
+            // Maybe we don't need to update positionsn on every frame.
+            //this.Melds[i].UpdatePositions();
             this.Melds[i].Update(window, step);
         }
     }
 
     public void Render(RenderWindow window) {
-        foreach (var m in this.Melds) {
-            m.Render(window);
+        foreach (GraphicMeld meld in this.Melds) {
+            meld.Render(window);
         }
     }
 }

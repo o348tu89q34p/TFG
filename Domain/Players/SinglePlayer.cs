@@ -77,8 +77,8 @@ public class SinglePlayer<T, U> where T : Scale, new() where U : Scale, new()
                 throw new InvalidOperationException("The last card must be discaded.");
             }
             melds.Add(mr);
-        } catch {
-            throw new InvalidOperationException("The cards given don't form a valid run.");
+        } catch (Exception e) {
+            throw new InvalidOperationException(e.Message);
         }
 
         this.Dispose(this.Move.CardsMoved);
@@ -102,10 +102,6 @@ public class SinglePlayer<T, U> where T : Scale, new() where U : Scale, new()
             }
             melds.Add(mr);
         } catch (Exception e) {
-            for (int i = 0; i < cards.Size(); i++) {
-                cards.GetAt(i).Print();
-            }
-            //throw new InvalidOperationException("The cards given don't form a valid set.");
             throw new InvalidOperationException(e.Message);
         }
 
@@ -114,11 +110,61 @@ public class SinglePlayer<T, U> where T : Scale, new() where U : Scale, new()
         return new ResultMove<ICard<T, U>>(this.Move.Move, retCards, null, null);
     }
 
+    private ResultMove<ICard<T, U>> MakeLayOff(List<IMeld<T, U>> melds) {
+        if (melds.Count == 0) {
+            throw new InvalidOperationException("There are no melds.");
+        }
+
+        int? nMeld = this.Move.MeldAffected;
+        if (nMeld == null) {
+            throw new InvalidOperationException("No meld specified.");
+        }
+
+        var twoLists = this.GetCards(this.Move.CardsMoved);
+        ArrayHand<T, U> cards = twoLists.Item1;
+        List<ICard<T, U>> retCards = twoLists.Item2;
+
+        try {
+            melds[(int)nMeld].Add(cards);
+        } catch (Exception e) {
+            throw new InvalidOperationException(e.Message);
+        }
+        this.Dispose(this.Move.CardsMoved);
+
+        return new ResultMove<ICard<T, U>>(this.Move.Move, retCards, null, null);
+    }
+
+    private ResultMove<ICard<T, U>> MakeReplace(List<IMeld<T, U>> melds) {
+        int? nMeld = this.Move.MeldAffected;
+        int? nWild = this.Move.CardAffected;
+        //int nCard = this.Move.CardsMoved[0];
+
+        var twoLists = this.GetCards(this.Move.CardsMoved);
+        ArrayHand<T, U> cards = twoLists.Item1;
+        List<ICard<T, U>> retCards = new List<ICard<T, U>>();
+
+        if (nMeld == null || nWild == null) {
+            throw new Exception("Incomplete information to make the replacement.");
+        }
+
+        try {
+            WildCard<T, U> wc = melds[(int)nMeld].Replace(cards.GetAt(0), (int)nWild);
+            this.Hand.RemoveAt(this.Move.CardsMoved.ElementAt(0));
+            this.Hand.Append(wc);
+            retCards.Add(wc);
+        } catch (Exception e) {
+            throw new InvalidOperationException(e.Message);
+        }
+
+        return new ResultMove<ICard<T, U>>(this.Move.Move, retCards, this.Move.MeldAffected, this.Move.CardAffected);
+    }
+
     private ResultMove<ICard<T, U>> MakeShed(Stack<ICard<T, U>> discard) {
         int pos = this.Move.CardsMoved.ElementAt(0);
         ICard<T, U> card = this.Hand.GetAt(pos);
 
-        if (this.Picked != null && this.Picked == card) {
+        // If we pick from discard but form melds with every other card in the hand we get locked with that card.
+        if (this.Hand.Size() > 1 && this.Picked != null && this.Picked == card) {
             throw new InvalidOperationException("Cannot discard the picked card if it's from the discard pile.");
         }
 
@@ -143,6 +189,10 @@ public class SinglePlayer<T, U> where T : Scale, new() where U : Scale, new()
                 return this.MakeRun(rules, melds);
             case MoveKind.SET:
                 return this.MakeSet(rules, melds);
+            case MoveKind.LAY_OFF:
+                return this.MakeLayOff(melds);
+            case MoveKind.REPLACE:
+                return this.MakeReplace(melds);
             case MoveKind.SHED:
                 return this.MakeShed(discard);
             default:

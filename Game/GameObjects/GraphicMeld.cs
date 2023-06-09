@@ -6,100 +6,80 @@ using Game;
 
 namespace GameObjects;
 
-class GraphicMeld {
+public class GraphicMeld {
     private List<Sprite> Meld { get; }
-    private float Middle { get; }
+    private Vector2f Canvas { get; }
     private int X { get; set; }
     private int N { get; set; }
+
     private int? HoveredCard { get; set; }
     private int? SelectedCard { get; set; }
-    private RectangleShape? BigSelector { get; set; }
-    private RectangleShape? BigHover { get; set; }
+    private RectangleShape? Selector { get; set; }
+    private RectangleShape? Hover { get; set; }
 
     private static float Height = 170.0f;
     private static float HorSpacing = 10.0f;
     private static float VertSpacing = 30.0f;
 
-    // n is the number of melds. x is the position of this meld in the list.
-    public GraphicMeld(List<Sprite> meld, float middle, int n, int x) {
+    public GraphicMeld(List<Sprite> meld, Vector2f canvas, int n, int x) {
         this.Meld = meld;
-        this.Middle = middle;
+        this.Canvas = canvas;
         this.X = x;
         this.N = n;
-        this.HoveredCard = null;
-        this.SelectedCard = null;
 
-        this.UpdatePositions(middle, n, x);
+        this.UpdatePositions();
     }
 
-    public void UpdatePositions(float middle, int n, int x) {
-        float allWidth = (TextureUtils.CardWidth*n + HorSpacing*(n - 1));
+    // Place the melds in columns in the middle of the screen.
+    public void UpdatePositions() {
+        float allWidth = (TextureUtils.CardWidth*this.N + HorSpacing*(this.N - 1));
         float singleWidth = (TextureUtils.CardWidth + HorSpacing);
-        float start = middle - (allWidth/2.0f);
+        float start = this.Canvas.X/2.0f - (allWidth/2.0f);
 
         for (int i = 0; i < this.Meld.Count; i++) {
-            this.Meld[i].Position = new Vector2f(start + singleWidth*x,
+            this.Meld[i].Position = new Vector2f(start + singleWidth*this.X,
                                                  Height + VertSpacing*(this.Meld.Count - i - 1));
         }
     }
 
-    public void Replace(Sprite newCard, float middle, int n, int x, int i) {
-        this.Meld[i] = newCard;
-        this.UpdatePositions(middle, n, x);
-    }
-
-    public void Prepend(List<Sprite> newCards, float middle, int n, int x) {
-        for (int i = 0; i < newCards.Count; i++) {
-            this.Meld.Insert(i, newCards.ElementAt(i));
+    public (int?, int?) SelectedParts() {
+        if (this.Selector == null) {
+            return (null, this.SelectedCard);
         }
-        this.UpdatePositions(middle, n, x);
+
+        return (this.X, this.SelectedCard);
     }
 
-    public void Append(List<Sprite> newCards, float middle, int n, int x) {
-        for (int i = 0; i < newCards.Count; i++) {
-            this.Meld.Add(newCards.ElementAt(i));
+    public void ToggleSelector() {
+        if (this.Hover == null) {
+            this.Selector = null;
+            this.SelectedCard = null;
+        } else {
+            if (this.Selector == null) {
+                this.Selector = new RectangleShape(this.Hover);
+                this.Selector.OutlineColor = Color.Red;
+                this.SelectedCard = this.HoveredCard;
+            } else {
+                this.Selector = null;
+                this.SelectedCard = null;
+            }
         }
-        this.UpdatePositions(middle, n, x);
     }
 
-    private FloatRect Hitbox(int i, Vector2f pos) {
+    public bool IsHovered() {
+        return this.Hover != null;
+    }
+
+    // Given the order of a card in a meld and its position on the plane, return its visible area.
+    private FloatRect Hitbox(Vector2f pos, int i) {
         float height;
-        if (i == this.N - 1) {
+        if (i == 0) {
             height = TextureUtils.CardHeight;
         } else {
             height = VertSpacing;
         }
 
         return new FloatRect(pos, new Vector2f(TextureUtils.CardWidth, height));
-    }
-
-    public bool IsHovered() {
-        return this.BigHover != null;
-    }
-
-    public void ToggleBigSelector(Step step) {
-        if (step == Step.HUM_LAYOFF) {
-            if (this.BigHover != null) {
-                if (this.BigSelector == null) {
-                    this.BigSelector = new RectangleShape(this.BigHover);
-                    this.BigSelector.OutlineColor = Color.Red;
-                    this.SelectedCard = this.HoveredCard;
-                } else {
-                    this.BigSelector = null;
-                    this.SelectedCard = null;
-                }
-            } else {
-                this.BigSelector = null;
-            }
-        }
-    }
-
-    public (int?, int?) SelectedParts() {
-        if (this.BigSelector == null) {
-            return (null, this.SelectedCard);
-        }
-
-        return (this.X, this.SelectedCard);
     }
 
     private RectangleShape BuildBigSelector(Color color) {
@@ -117,40 +97,60 @@ class GraphicMeld {
         return rs;
     }
 
+    private RectangleShape BuildSmallSelector(int i, Color color) {
+        float width = TextureUtils.CardWidth;
+        float height;
+        if (i == 0) {
+            height = TextureUtils.CardHeight;
+        } else {
+            height = VertSpacing;
+        }
+        // Consider the fact that we draw bottom to top on the screen.
+        Vector2f newPos = new Vector2f(this.Meld[0].Position.X,
+                                       this.Meld[0].Position.Y - VertSpacing*(i));
+        RectangleShape rs = new RectangleShape(new Vector2f(width, height)) {
+            Position = newPos,
+            FillColor = new Color(0, 0, 0, 0),
+            OutlineColor = color,
+            OutlineThickness = 2.0f
+        };
+
+        return rs;
+    }
+
     public void Update(RenderWindow window, Step step) {
         Vector2f mouse = window.MapPixelToCoords(Mouse.GetPosition(window));
-        if (step != Step.HUM_LAYOFF && step != Step.HUM_REPLACE) {
-            this.SelectedCard = null;
-            this.BigHover = null;
-            this.BigSelector = null;
-            return;
-        } else if (step == Step.HUM_LAYOFF) {
-            int i = 0;
-            bool hovering = false;
-            while (i < this.Meld.Count && !hovering) {
-                hovering = this.Hitbox(i, this.Meld[i].Position).Contains(mouse.X, mouse.Y);
-                i++;
-            }
 
-            if (hovering) {
-                this.BigHover = this.BuildBigSelector(Color.Yellow);
-                this.HoveredCard = i;
-            } else {
-                this.BigHover = null;
-                this.HoveredCard = null;
-            }
-            /*
-            for (int i = 0; i < this.Meld.Count; i++) {
-                hovering = this.Hitbox(i, this.Meld[i].Position).Contains(mouse.X, mouse.Y);
-                if (hovering && step == Step.HUM_LAYOFF) {
-                    this.BigHover = this.BuildBigSelector(Color.Yellow);
-                    this.SelectedCard = i;
-                }
-            }
-            */
+        if (step != Step.HUM_LAYOFF && step != Step.HUM_REPLACE) {
+            this.HoveredCard = null;
+            this.Hover = null;
+            this.Selector = null;
+            return;
         }
 
-        if (step == Step.HUM_REPLACE) {
+        int i = 0;
+        bool hovering = false;
+        while (i < this.Meld.Count && !hovering) {
+            hovering = this.Hitbox(this.Meld[i].Position, i).Contains(mouse.X, mouse.Y);
+            if (!hovering) {
+                i++;
+            }
+        }
+
+        if (step == Step.HUM_LAYOFF) {
+            if (hovering) {
+                this.Hover = this.BuildBigSelector(Color.Yellow);
+            } else {
+                this.Hover = null;
+            }
+        } else if (step == Step.HUM_REPLACE) {
+            if (hovering) {
+                this.Hover = this.BuildSmallSelector(i, Color.Yellow);
+                this.HoveredCard = i;
+            } else {
+                this.HoveredCard = null;
+                this.Hover = null;
+            }
         }
     }
 
@@ -159,12 +159,12 @@ class GraphicMeld {
             window.Draw(this.Meld[i]);
         }
 
-        if (this.BigHover != null) {
-            window.Draw(this.BigHover);
+        if (this.Hover != null) {
+            window.Draw(this.Hover);
         }
 
-        if (this.BigSelector != null) {
-            window.Draw(this.BigSelector);
+        if (this.Selector != null) {
+            window.Draw(this.Selector);
         }
     }
 }

@@ -12,23 +12,18 @@ namespace Domain {
                 this.Rules = rules;
                 var (first, _) = hand.FirstNatural();
                 if (first == null) {
-                    Console.WriteLine("No natural cards in the meld.");
-                    throw new ArgumentException("No natural cards.");
+                    throw new ArgumentException("No natural cards in the meld.");
                 }
                 if (!rules.MultWc && hand.NumWc > 1) {
-                    Console.WriteLine("No multiple wild cards allowed.");
                     throw new ArgumentException("No multiple wild cards allowed.");
                 }
                 if (!rules.ConsecWc && hand.HasConsecWc) {
-                    Console.WriteLine("No consecutive wild cards allowed.");
                     throw new ArgumentException("No consecutive wild cards allowed.");
                 }
                 if (hand.Size() < rules.MinSetLen) {
-                    Console.WriteLine("Hand size below minimum number of cards.");
                     throw new ArgumentException("Hand size below minimum number of cards.");
                 }
                 if (hand.Size() > rules.MaxSetLen) {
-                    Console.WriteLine("Hand size above maximum number of cards.");
                     throw new ArgumentException("Hand size above maximum number of cards.");
                 }
 
@@ -36,14 +31,16 @@ namespace Domain {
                 this.Cards = new LinkedList<NaturalCard<T, U>>();
                 this.Wilds = new LinkedList<WildCard<T, U>>();
 
+                (bool canAdd, string msg) = this.ValidateSet(hand);
+                if (!canAdd) {
+                    Console.WriteLine("Caought you!");
+                    throw new ArgumentException(msg);
+                }
+
                 for (int i = 0; i < hand.Size(); i++) {
                     ICard<T, U> aux = hand.GetAt(i);
                     if (aux.IsWild()) {
                         this.Wilds.AddLast((WildCard<T, U>)aux);
-                    } else if (first.CompareRank(aux) != 0) {
-                        throw new ArgumentException("mixed ranks");
-                    } else if (this.Cards.Contains(aux)) {
-                        throw new ArgumentException("duplicated cards");
                     } else {
                         this.Cards.AddLast((NaturalCard<T, U>)aux);
                     }
@@ -54,12 +51,13 @@ namespace Domain {
                 return this.Cards.Count + this.Wilds.Count;
             }
 
-            private bool CanAddHand(ArrayHand<T, U> hand) {
+            private (bool, string) ValidateSet(ArrayHand<T, U> hand) {
                 int handLen = hand.Size();
-                if ((this.Size() + handLen > this.Rules.MaxSetLen) ||
-                    (!this.Rules.MultWc && (hand.NumWc + this.Wilds.Count) > 1))
-                {
-                    return false;
+                if (this.Size() + handLen > this.Rules.MaxSetLen) {
+                    return (false, "The cards do not fit.");
+                }
+                if (!this.Rules.MultWc && (hand.NumWc + this.Wilds.Count) > 1) {
+                    return (false, "The cards make the set have multiple wild cards.");
                 }
 
                 for (int i = 0; i < handLen; i++) {
@@ -69,26 +67,29 @@ namespace Domain {
                     }
 
                     if (aux.CompareRank(this.First) != 0) {
-                        return false;
+                        return (false, "The cards have different ranks.");
                     }
 
                     for (int j = i + 1; j < handLen; j++) {
                         if (aux.CompareTo(hand.GetAt(j)) == 0) {
-                            return false;
+                            return (false, "Some cards are duplicated.");
+                        } else if (!hand.GetAt(j).IsWild() && aux.CompareRank(hand.GetAt(j)) != 0) {
+                            return (false, "The cards do not have the same rank.");
                         }
                     }
 
                     if (this.Cards.Contains(aux)) {
-                        return false;
+                        return (false, "Some cards are already in the set.");
                     }
                 }
 
-                return true;
+                return (true, "");
             }
 
             public void Add(ArrayHand<T, U> hand) {
-                if (!this.CanAddHand(hand)) {
-                    throw new ArgumentException("Invalid addition to set.");
+                (bool canAdd, string msg) = this.ValidateSet(hand);
+                if (!canAdd) {
+                    throw new ArgumentException(msg);
                 }
 
                 for (int i = 0; i < hand.Size(); i++) {
@@ -101,73 +102,53 @@ namespace Domain {
                 }
             }
 
-            /*
-            private bool CanReplaceHand(ArrayHand<T, U> hand) {
-                int handLen = hand.Size();
-
-                if ((this.Size() != this.MaxSize) || // The set has to have MaxSize cards in it.
-                    (handLen > this.Wilds.Count) ||
-                    (hand.NumWc > 0)) // No wc allowed in hand.
-                {
-                    return false;
+            public WildCard<T, U> Replace(ICard<T, U> card, int n) {
+                if (this.Size() != this.Rules.MaxSetLen) {
+                    throw new ArgumentException("The set must be full before replacing.");
                 }
-
-                for (int i = 0; i < handLen; i++) {
-                    ICard<T, U> c = (NaturalCard<T, U>)hand.GetAt(i);
-
-                    if (c.CompareRank(this.First) != 0) {
-                        return false;
-                    }
-
-                    for (int j = i + 1; j < handLen; j++) {
-                        if (c.CompareTo(hand.GetAt(j)) == 0) {
-                            return false;
-                        }
-                    }
-
-                    if (this.Cards.Contains(c)) {
-                        return false;
-                    }
+                if (this.Wilds.Count == 0) {
+                    throw new ArgumentException("The set has no wild cards.");
                 }
-
-                return true;
-
-                public void Replace(ICard<T, U> card, int _) {
-                if (!this.CanReplaceHand(card)) {
-                throw new ArgumentException("Invalid replacement to set.");
+                if (card.IsWild()) {
+                    throw new ArgumentException("The replacement cannot be a wild card.");
                 }
-
-                for (int i = 0; i < card.Size(); i++) {
-                this.Cards.AddLast((NaturalCard<T, U>)card.GetAt(i));
-                this.Wilds.RemoveFirst();
+                /*
+                  // There are other guards in place that might make this not needed.
+                if (n < this.Cards.Count) {
+                    // Wilds will be at the end.
+                    throw new Exception("The position refers to a non wild card.");
                 }
-                }
-            }
-            */
-
-            public WildCard<T, U> Replace(ICard<T, U> card, int _) {
-                if ((this.Size() != this.Rules.MaxSetLen) || // The set has to have MaxSize cards in it.
-                    (this.Wilds.Count > 0) ||
-                    (card.IsWild()))
-                {
-                    throw new ArgumentException();
-                }
+                */
 
                 NaturalCard<T, U> newCard = (NaturalCard<T, U>)card;
-                if ((newCard.CompareRank(this.First) != 0) ||
-                    (this.Cards.Contains(newCard)))
-                    {
-                        throw new ArgumentException();
-                    }
+                if (newCard.CompareRank(this.First) != 0) {
+                    throw new ArgumentException("Invalid rank for the replacement.");
+                }
+                if (this.Cards.Contains(newCard)) {
+                    throw new ArgumentException("The replacement is already in the set.");
+                }
 
                 if (this.Wilds.First == null) {
-                    throw new Exception();
+                    throw new Exception("Check to remove the warning.");
                 }
                 this.Cards.AddLast(newCard);
                 WildCard<T, U> ret = this.Wilds.First.Value;
                 this.Wilds.RemoveFirst();
 
                 return ret;
+            }
+
+            public List<ICard<T, U>> GetCards() {
+                int dims = this.Wilds.Count + this.Cards.Count;
+                List<ICard<T, U>> res = new List<ICard<T, U>>(dims);
+                foreach (WildCard<T, U> wc in this.Wilds) {
+                    res.Add((ICard<T, U>)wc);
+                }
+                foreach (NaturalCard<T, U> nc in this.Cards) {
+                    res.Add((ICard<T, U>)nc);
+                }
+
+                return res;
             }
 
             public void Print() {

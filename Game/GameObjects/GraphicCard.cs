@@ -7,17 +7,21 @@ using Game;
 namespace GameObjects;
 
 public class GraphicCard {
-    private Sprite FrontSprite { get; }
+    private Sprite Sprite { get; }
+    private int PosInHand { get; set; }
 
     private RectangleShape Selector { get; set; }
     private float Visible { get; set; }
     private bool IsLast { get; set; }
     private bool Taken { get; set; }
 
+    private Sprite? Cross { get; set; }
+
+    public bool HoveredCross { get; private set; }
     public bool IsHovered { get; private set; }
 
     public GraphicCard(Sprite sprite, float visible) {
-        this.FrontSprite = sprite;
+        this.Sprite = sprite;
         this.Selector = this.BuildSelector();
         this.Visible = visible;
         this.IsLast = false;
@@ -26,22 +30,28 @@ public class GraphicCard {
     }
 
     public GraphicCard(Sprite frontSprite, Vector2f pos) {
-        this.FrontSprite = frontSprite;
-        this.FrontSprite.Position = pos;
+        this.Sprite = frontSprite;
+        this.Sprite.Position = pos;
         this.Selector = this.BuildSelector();
         this.Taken = false;
     }
 
+    public GraphicCard(Sprite sprite, int posInHand) {
+        this.Sprite = sprite;
+        this.Selector = this.BuildSelector();
+        this.PosInHand = posInHand;
+    }
+
     public Vector2f GetPosition() {
-        return this.FrontSprite.Position;
+        return this.Sprite.Position;
     }
 
     public Sprite GetSprite() {
-        return this.FrontSprite;
+        return this.Sprite;
     }
 
     public void UpdatePosition(Vector2f pos) {
-        this.FrontSprite.Position = pos;
+        this.Sprite.Position = pos;
     }
 
     public void DeHover() {
@@ -61,10 +71,10 @@ public class GraphicCard {
     }
 
     private RectangleShape BuildSelector() {
-        float h = this.FrontSprite.GetGlobalBounds().Height;
+        float h = this.Sprite.GetGlobalBounds().Height;
         float w;
         if (this.IsLast) {
-            w = this.FrontSprite.GetGlobalBounds().Width;
+            w = this.Sprite.GetGlobalBounds().Width;
         } else {
             w = this.Visible - 2.7f;
         }
@@ -87,7 +97,15 @@ public class GraphicCard {
         Vector2f mouse = window.MapPixelToCoords(Mouse.GetPosition(window));
 
         if (this.IsTaken()) {
+            this.Cross = new Sprite(TextureUtils.CrossTexture);
+            float x = this.Sprite.Position.X + TextureUtils.CardWidth - this.Cross.GetGlobalBounds().Width - 4.0f;
+            float y = this.Sprite.Position.Y + 4.0f;
+            this.Cross.Position = new Vector2f(x, y);
+            this.HoveredCross = this.Cross.GetGlobalBounds().Contains(mouse.X, mouse.Y);
             return;
+        } else {
+            this.Cross = null;
+            this.HoveredCross = false;
         }
 
         switch (step) {
@@ -98,7 +116,7 @@ public class GraphicCard {
             case Step.HUM_DISC:
                 this.IsLast = isLast;
                 if (this.IsLast) {
-                    FloatRect bounds = this.FrontSprite.GetGlobalBounds();
+                    FloatRect bounds = this.Sprite.GetGlobalBounds();
                     this.IsHovered = bounds.Contains(mouse.X, mouse.Y);
                 } else {
                     FloatRect bounds = this.Selector.GetGlobalBounds();
@@ -111,14 +129,17 @@ public class GraphicCard {
     }
 
     private Vector2f GetSize() {
-        return new Vector2f(this.FrontSprite.GetGlobalBounds().Width,
-                            this.FrontSprite.GetGlobalBounds().Height);
+        return new Vector2f(this.Sprite.GetGlobalBounds().Width,
+                            this.Sprite.GetGlobalBounds().Height);
     }
 
     public void Render(RenderWindow window) {
-        window.Draw(this.FrontSprite);
+        window.Draw(this.Sprite);
         if (this.IsHovered) {
             window.Draw(this.Selector);
+        }
+        if (this.Cross != null) {
+            window.Draw(this.Cross);
         }
     }
 }

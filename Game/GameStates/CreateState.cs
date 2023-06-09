@@ -37,7 +37,7 @@ namespace Game {
             this.OptDeck = new NextOption<Nextable<string>, string>("Tipus de baralla", optDeck, new Vector2f(xLeft, lTop + space));
             lTop += space;
 
-            var optNumPlayers = new NextableInt(2, 8, 3);
+            var optNumPlayers = new NextableInt(2, 8, 2);
             this.OptNumPlayers = new NextOption<Nextable<int>, int>("Nombre de jugadors", optNumPlayers, new Vector2f(xLeft, lTop + space));
             lTop += space;
 
@@ -45,11 +45,11 @@ namespace Game {
             this.OptNumDecks = new NextOption<Nextable<int>, int>("Nombre de baralles", optNumDecks, new Vector2f(xLeft, lTop + space));
             lTop += space;
 
-            var optNumWilds = new NextableInt(0, 10, 0);
+            var optNumWilds = new NextableInt(0, 10, 10);
             this.OptNumWilds = new NextOption<Nextable<int>, int>("Nombre de comodins", optNumWilds, new Vector2f(xLeft, lTop + space));
             lTop += space;
 
-            var optNumCards = new NextableInt(1, 109, 7);
+            var optNumCards = new NextableInt(1, 109, 20);
             this.OptNumCards = new NextOption<Nextable<int>, int>("Cartes per jugador", optNumCards, new Vector2f(xLeft, lTop + space));
             lTop += space;
 
@@ -57,11 +57,11 @@ namespace Game {
             this.OptCanWrap = new NextOption<Nextable<bool>, bool>("Les escales no es tanquen", optCanWrap, new Vector2f(xRight, rTop + space));
             rTop += space;
 
-            var optMultWc = new NextableBool(false);
+            var optMultWc = new NextableBool(true);
             this.OptMultWc = new NextOption<Nextable<bool>, bool>("Multiples comodins per grup", optMultWc, new Vector2f(xRight, rTop + space));
             rTop += space;
 
-            var optConsecWc = new NextableBool(false);
+            var optConsecWc = new NextableBool(true);
             this.OptConsecWc = new NextOption<Nextable<bool>, bool>("Comodins consecutius en un grup", optConsecWc, new Vector2f(xRight, rTop + space));
             rTop += space;
 

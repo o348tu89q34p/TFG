@@ -9,9 +9,6 @@ namespace Domain {
         public bool HasConsecWc { get; private set; }
 
         public ArrayHand(int n) {
-            if (n < 0) {
-                throw new ArgumentException("Negative hand size.");
-            }
             this.Hand = new List<ICard<T, U>>(n);
             this.Capacity = n;
             this.NumWc = 0;
@@ -85,7 +82,12 @@ namespace Domain {
                 throw new Exception("Full hand.");
             }
 
+            if (c.IsWild()) {
+                this.NumWc++;
+            }
+
             this.Hand.Add(c);
+            this.UpdateConsecWc(this.Hand.Count - 1);
         }
 
         public ICard<T, U> GetAt(int pos) {
@@ -126,6 +128,12 @@ namespace Domain {
                                         (this.GetAt(i).IsWild() &&
                                          this.GetAt(i - 1).IsWild()));
                 }
+            }
+        }
+
+        public void Reverse() {
+            for (int i = 0; i < this.Hand.Count/2; i++) {
+                this.Exchange(i, this.Hand.Count - 1 - i);
             }
         }
 

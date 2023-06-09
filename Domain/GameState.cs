@@ -77,12 +77,13 @@ public class GameState<T, U>
             }
         }
 
-        public void FilpDiscard() {
+        public void FlipDiscard() {
             if (this.Stock.Count <= 0) {
                 ICard<T, U> top = this.Discard.Pop();
                 while (this.Discard.Count > 0) {
                     this.Stock.Push(this.Discard.Pop());
                 }
+                this.Discard.Push(top);
             }
         }
 
@@ -109,16 +110,13 @@ public class GameState<T, U>
             return res;
         }
 
-        public bool StockEmpty() {
-            return this.Stock.Count == 0;
-        }
-
-        public ICard<T, U>? TopDiscard() {
-            if (this.Discard.Count == 0) {
-                return null;
-            } else {
-                return this.Discard.Peek();
+        public (bool, ICard<T, U>?) PilesStatus() {
+            ICard<T, U>? topDiscard = null;
+            if (this.Discard.Count > 0) {
+                topDiscard = this.Discard.Peek();
             }
+
+            return (this.Stock.Count > 0, topDiscard);
         }
 
         public PlayerProfile CurrentProfile() {
@@ -166,10 +164,6 @@ public class GameState<T, U>
             return this.Players.Length;
         }
 
-        public int StockDepth() {
-            return this.Stock.Count;
-        }
-
         public void NextTurn() {
             this.Turn = (this.Turn + 1)%this.Players.Length;
         }
@@ -197,5 +191,32 @@ public class GameState<T, U>
 
         public void HumanSortSet() {
             this.Players[this.Human].SortForSet();
+        }
+
+        public List<List<ICard<T, U>>> CurrentMelds() {
+            List<List<ICard<T, U>>> lst = new List<List<ICard<T, U>>>(this.Melds.Count);
+            foreach (IMeld<T, U> meld in this.Melds) {
+                lst.Add(meld.GetCards());
+            }
+
+            return lst;
+        }
+
+        public List<List<ICard<T, U>>> PlayerHands() {
+            List<List<ICard<T, U>>> lst = new List<List<ICard<T, U>>>(this.Players.Length);
+            for (int i = 0; i < this.Players.Length; i++) {
+                lst.Add(this.Players[i].GetCards());
+            }
+
+            return lst;
+        }
+
+        public List<PlayerProfile> PlayerProfiles() {
+            List<PlayerProfile> lst = new List<PlayerProfile>(this.Players.Length);
+            for (int i = 0; i < this.Players.Length; i++) {
+                lst.Add(this.Players[i].GetProfile());
+            }
+
+            return lst;
         }
     }

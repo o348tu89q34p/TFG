@@ -1,3 +1,5 @@
+//https://towardsdatascience.com/ai-learning-gin-rummy-part-ii-enter-google-tensorflow-7338ef93f2ed
+//https://towardsdatascience.com/learning-gin-rummy-part-i-75aef02c94ba
 namespace Domain;
 
 public class Brain<T, U> where T : Scale, new() where U : Scale, new()
@@ -25,6 +27,55 @@ public class Brain<T, U> where T : Scale, new() where U : Scale, new()
 
         return res;
     }
+
+    private List<(ICard<T, U>, int)> PrimeSet(ArrayHand<T, U> hand) {
+        List<(ICard<T, U>, int)> res = this.NumberCards(hand);
+        res.Sort((a, b) => a.Item1.CompareRank(b.Item1));
+
+        return res;
+    }
+
+    /*
+    private List<int>? FirstSet(ArrayHand<T, U> hand) {
+        if (hand.Size() == 0) {
+            return null;
+        }
+
+        List<(ICard<T, U>, int)> cards = this.PrimeSet(hand);
+        List<int> poses = new List<int>();
+        ICard<T, U>? pointer = null;
+        ICard<T, U>? prev = null;
+
+        for (int i = 1; i < cards.Count; i++) {
+            ICard<T, U> c = cards.ElementAt(i).Item1;
+            if (c.IsWild()) {
+                return null;
+            }
+            if (pointer == null || prev == null) {
+                pointer = ICard<T, U>.Copy(c);
+                prev = c;
+            } else {
+                pointer.Next(true, true);
+                if (c.Equals(pointer)) {
+                    poses.Add(cards.ElementAt(i).Item2);
+                    prev = c;
+                } else if (c.Equals(prev)) {
+                    pointer.Prev(true, true);
+                } else {
+                    if (poses.Count >= this.Rules.MeldR.MinRunLen) {
+                        return poses;
+                    }
+                    pointer = ICard<T, U>.Copy(c);
+                    prev = c;
+                    poses.Clear();
+                    poses.Add(cards.ElementAt(i).Item2);
+                }
+            }
+        }
+
+        return null;
+    }
+    */
 
     private List<int>? FirstRun(ArrayHand<T, U> hand) {
         if (hand.Size() == 0) {
@@ -80,10 +131,10 @@ public class Brain<T, U> where T : Scale, new() where U : Scale, new()
 
         if (poses == null) {
             return null;
+            //poses = this.FirstRun(p.GetHand());
         } else {
             return new ResultMove<int>(MoveKind.RUN, poses, null, null);
         }
-
     }
 
     public ResultMove<int> MakeDiscard(SinglePlayer<T, U> p) {

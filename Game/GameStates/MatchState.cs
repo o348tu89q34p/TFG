@@ -13,13 +13,10 @@ using Gui;
 using GameObjects;
 using Animation;
 
-/*
-  put each state in a folder and their respective classes with them instead of
-  having them all mixed up here and in gameobjects.
-*/
 namespace Game;
 
 public enum Step {
+    START,
     BOT_PICK,
     BOT_PLAY,
     BOT_DISC,
@@ -30,13 +27,8 @@ public enum Step {
     HUM_SET,
     HUM_LAYOFF,
     HUM_REPLACE,
-    HUM_DISC
-}
-
-public enum OpponentAnim {
-    PICK,
-    MELD,
-    DROP
+    HUM_DISC,
+    END
 }
 
 public enum PileType {
@@ -53,7 +45,7 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
     private Sprite Background { get; }
 
     private ActionButtons Buttons { get; }
-    private GraphicHand Hand { get; set; }
+    private GraphicHand Hand { get; }
     private OpponentsInfo Opponents { get; }
     private StatusBar Bar { get; }
     private GraphicPiles Piles { get; }
@@ -78,20 +70,11 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
     private DoubleImageButton SortSet { get; }
     private RegularButton QuitButton { get; }
 
+    // Splash screens.
+    private StartScreen? Start { get; set; }
+    private EndScreen? Ending { get; set; }
+
     public MatchState(StateManager gsManager, RenderWindow window, Rules<T, U> rules) {
-        // Game data.
-        this.GameData = new GameState<T, U>(rules);
-        // End game data.
-
-        // Action buttons.
-        this.Buttons = new ActionButtons(window, this.GenerateActions(rules));
-        this.GSManager = gsManager;
-        // End action buttons.
-
-        // Background.
-        this.Background = new Sprite(TextureUtils.BackgroundTexture);
-        // End background.
-
         // Graphic hand.
         switch (rules.Kind) {
             case DeckType.SPANISH_DECK:
@@ -107,7 +90,23 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
             default:
                 throw new Exception("Invalid deck kind.");
         }
-        this.Hand = new GraphicHand(window, this.HumanSprites(GameData.HumanHand()), TextureUtils.CardWidth, TextureUtils.CardHeight);
+
+        // Game data.
+        this.GameData = new GameState<T, U>(rules);
+        // End game data.
+
+        // Action buttons.
+        this.Buttons = new ActionButtons(window, this.GenerateActions(rules));
+        this.GSManager = gsManager;
+        // End action buttons.
+
+        // Background.
+        this.Background = new Sprite(TextureUtils.BackgroundTexture);
+        // End background.
+
+        // Graphic hand.
+        //this.Hand = new GraphicHand(window, this.CardsToSprites(GameData.HumanHand()), TextureUtils.CardWidth, TextureUtils.CardHeight);
+        this.Hand = new GraphicHand(window, this.CardsToSprites(this.GameData.HumanHand()));
         // End graphic hand.
 
         // Opponents.
@@ -119,7 +118,8 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
         // End status bar.
 
         // Piles.
-        this.Piles = new GraphicPiles(window, this.TopPiles(), this.GameData.StockDepth());
+        this.Piles = new GraphicPiles(window, (this.CardBack, TextureUtils.EmptyTexture));
+        this.UpdatePiles();
         // End piles.
 
         // Melds.
@@ -128,11 +128,7 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
 
         this.PrevError = "";
         this.Pointer = this.GameData.NumPlayers() - 1 - this.GameData.HumanPos();
-        if (this.GameData.IsHumanTurn()) {
-            this.Moment = Step.HUM_PICK;
-        } else {
-            this.Moment = Step.BOT_PICK;
-        }
+        this.Moment = Step.START;
         this.IsAnimating = false;
 
         this.MoveAsked = new ResultMove<int>(MoveKind.EMPTY, new List<int>(), null, null);
@@ -141,6 +137,7 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
         this.NewStatus = "";
         this.Animation = null;
 
+        this.Start = new StartScreen(window, this.GameData.CurrentProfile().Name);
 
         // Quit button.
         float bottom = window.Size.Y - TextureUtils.SquareHoverTexture.Size.Y - 5.0f;
@@ -188,7 +185,7 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
         }
     }
 
-    private List<Sprite> HumanSprites(List<ICard<T, U>> hand) {
+    private List<Sprite> CardsToSprites(List<ICard<T, U>> hand) {
         List<Sprite> sprites = new List<Sprite>(hand.Count);
         for (int i = 0; i < hand.Count; i++) {
             ICard<T, U> c = hand.ElementAt(i);
@@ -198,26 +195,29 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
         return sprites;
     }
 
-    public (Texture, Texture, Sprite?) TopPiles() {
-        Sprite pick;
-        if (this.GameData.StockEmpty()) {
-            pick = new Sprite(TextureUtils.EmptyTexture);
-        } else {
-            pick = new Sprite(TextureUtils.FrenchBackTexture);
+    private List<List<Sprite>> AllMeldSprites() {
+        List<List<ICard<T, U>>> cards = this.GameData.CurrentMelds();
+        List<List<Sprite>> res = new List<List<Sprite>>(cards.Count);
+
+        foreach (List<ICard<T, U>> meld in cards) {
+            res.Add(this.CardsToSprites(meld));
         }
 
-        Sprite? disc = null;
-        ICard<T, U>? c = this.GameData.TopDiscard();
-        if (c != null) {
-            disc = this.CardToSprite(c);
-        }
-
-        return (this.CardBack, TextureUtils.EmptyTexture, disc);
+        return res;
     }
 
-    private void ResyncHand(RenderWindow window) {
-        //this.Hand.RefreshHand(this.HumanSprites(this.GameData.HumanHand()));
-        this.Hand = new GraphicHand(window, this.HumanSprites(GameData.HumanHand()), TextureUtils.CardWidth, TextureUtils.CardHeight);
+    private void ShowSortRank(RenderWindow window) {
+        if (this.SortRun.IsHovered && this.Animation == null) {
+            this.GameData.HumanSortRun();
+            this.UpdateHand();
+        }
+    }
+
+    private void ShowSortSuit(RenderWindow window) {
+        if (this.SortSet.IsHovered && this.Animation == null) {
+            this.GameData.HumanSortSet();
+            this.UpdateHand();
+        }
     }
 
     // The events that can occur on a main menu.
@@ -255,25 +255,24 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
                 this.GSManager.ChangeState(window, new MenuState(this.GSManager, window));
             }
         }
+        bool cancel = false;
         switch (this.Moment) {
-            case Step.HUM_PICK:
-                PileType pt = this.Piles.OnMouseButtonPress(sender, e);
-                if (pt == PileType.STOCK && this.EmptyMove()) {
-                    this.MoveAsked = new ResultMove<int>(MoveKind.STOCK, new List<int>(), null, null);
-                } else if (pt == PileType.DISCARD && this.EmptyMove()) {
-                    this.MoveAsked = new ResultMove<int>(MoveKind.DISCARD, new List<int>(), null, null);
+            case Step.START:
+                if (this.GameData.IsHumanTurn()) {
+                    this.Moment = Step.HUM_PICK;
+                } else {
+                    this.Moment = Step.BOT_PICK;
                 }
                 break;
+            case Step.HUM_PICK:
+                this.ShowSortRank(window);
+                this.ShowSortSuit(window);
+                this.MoveAsked = this.Piles.PileClicked();
+                break;
             case Step.HUM_PLAY:
-                if (this.SortRun.IsHovered) {
-                    this.GameData.HumanSortRun();
-                    this.ResyncHand(window);
-                }
-                if (this.SortSet.IsHovered) {
-                    this.GameData.HumanSortSet();
-                    this.ResyncHand(window);
-                }
-                this.Moment = this.Buttons.OnMouseButtonPress(sender, e);
+                this.ShowSortRank(window);
+                this.ShowSortSuit(window);
+                (cancel, this.Moment) = this.Buttons.OnMouseButtonPress(sender, e);
                 this.PrevError = "";
                 break;
             case Step.HUM_RUN:
@@ -281,14 +280,14 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
                 if (lstRun != null) {
                     this.MoveAsked = new ResultMove<int>(MoveKind.RUN, lstRun, null, null);
                 }
-                this.Moment = this.Buttons.OnMouseButtonPress(sender, e);
+                (cancel, this.Moment) = this.Buttons.OnMouseButtonPress(sender, e);
                 break;
             case Step.HUM_SET:
                 List<int>? lstSet = this.Hand.ReadToHover();
                 if (lstSet != null) {
                     this.MoveAsked = new ResultMove<int>(MoveKind.SET, lstSet, null, null);
                 }
-                this.Moment = this.Buttons.OnMouseButtonPress(sender, e);
+                (cancel, this.Moment) = this.Buttons.OnMouseButtonPress(sender, e);
                 break;
             case Step.HUM_LAYOFF:
                 this.Melds.ToggleMelds(this.Moment);
@@ -297,12 +296,35 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
                 if (lstLay != null && nMeld != null) {
                     this.MoveAsked = new ResultMove<int>(MoveKind.LAY_OFF, lstLay, nMeld, null);
                 }
-                this.Moment = this.Buttons.OnMouseButtonPress(sender, e);
+                (cancel, this.Moment) = this.Buttons.OnMouseButtonPress(sender, e);
+                break;
+            case Step.HUM_REPLACE:
+                this.Melds.ToggleMelds(this.Moment);
+                (int? nMeldRep, int? nCard) = this.Melds.GetSelected();
+                List<int>? lstReplace = this.Hand.ReadToHover();
+                if (lstReplace != null && nMeldRep != null && nCard != null) {
+                    this.MoveAsked = new ResultMove<int>(MoveKind.REPLACE, lstReplace, nMeldRep, nCard);
+                }
+                (cancel, this.Moment) = this.Buttons.OnMouseButtonPress(sender, e);
                 break;
             case Step.HUM_DISC:
-                this.Moment = this.Buttons.OnMouseButtonPress(sender, e);
-                this.MoveAsked = this.Hand.ReadCard(this.MoveAsked);
+                (cancel, this.Moment) = this.Buttons.OnMouseButtonPress(sender, e);
+                List<int>? lstDisc = this.Hand.ReadShed();
+                if (lstDisc != null) {
+                    this.MoveAsked = new ResultMove<int>(MoveKind.SHED, lstDisc, null, null);
+                }
                 break;
+            case Step.END:
+                if (this.Ending != null) {
+                    if (this.Ending.Close()) {
+                        this.GSManager.ChangeState(window, new MenuState(this.GSManager, window));
+                    }
+                    this.Ending.ToggleTop();
+                }
+                break;
+        }
+        if (cancel) {
+            this.Hand.ResetHand();
         }
     }
 
@@ -310,27 +332,59 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
         return this.MoveAsked.Move == MoveKind.EMPTY;
     }
 
-    public void BotPick() {
-        this.MoveAnswered = this.GameData.BotPick();
-        PileType pt;
+    private void EmptyAskedMove() {
+        this.MoveAsked = new ResultMove<int>(MoveKind.EMPTY, new List<int>(), null, null);
+    }
+
+    private Sprite SpritePicked() {
+        if (this.MoveAnswered == null) {
+            throw new Exception("Answer is null");
+        }
         switch (this.MoveAnswered.Move) {
             case MoveKind.STOCK:
-                pt = PileType.STOCK;
+                return new Sprite(this.CardBack);
+            case MoveKind.DISCARD:
+                return this.CardToSprite(this.MoveAnswered.CardsMoved.ElementAt(0));
+            default:
+                throw new Exception("Invalid answer type.");
+        }
+    }
+
+    private void UpdatePiles() {
+        (bool notEmpty, ICard<T, U>? topDiscard) = this.GameData.PilesStatus();
+        Sprite? sprite = null;
+
+        if (topDiscard != null) {
+            sprite = this.CardToSprite(topDiscard);
+        }
+
+        this.Piles.UpdateChanges(notEmpty, sprite);
+    }
+
+    private void UpdateHand() {
+        this.Hand.UpdateHand(this.CardsToSprites(this.GameData.HumanHand()));
+    }
+
+    private void BotPick() {
+        this.MoveAnswered = this.GameData.BotPick();
+        Vector2f start;
+        switch (this.MoveAnswered.Move) {
+            case MoveKind.STOCK:
+                start = this.Piles.StockPos();
                 break;
             case MoveKind.DISCARD:
-                pt = PileType.DISCARD;
+                start = this.Piles.DiscardPos();
                 break;
             default:
                 throw new Exception("Invalid pick by a bot.");
         }
-        Sprite sprite = this.Piles.GetSprite(pt);
-        Vector2f start = this.Piles.GetPilePoint(pt);
+        Sprite sprite = this.SpritePicked();
         Vector2f end = this.Opponents.GetCardPosition(this.Pointer);
         this.Animation = new SlideAnimation(sprite, start, end, 0678.0f);
 
-        // this.Opponents.UpdateInfo(this.Pointer, this.GameData.CurrentProfile());
-        this.Piles.PopCard(pt);
+        this.UpdatePiles();
         this.Moment = Step.BOT_PLAY;
+        this.MoveAnswered = null;
     }
 
     private void BotPlay() {
@@ -343,17 +397,18 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
             return;
         }
 
-        List<Sprite> ls = this.HumanSprites(play.CardsMoved);
+        List<Sprite> ls = this.CardsToSprites(play.CardsMoved);
         switch (play.Move) {
             case MoveKind.RUN:
                 // we overwrite the count right here
                 // add an animation
                 this.Opponents.UpdateInfo(this.Pointer, this.GameData.CurrentProfile());
-                this.Melds.AddMeld(ls);
+                //this.Melds.AddMeld(ls);
                 break;
             default:
                 throw new Exception("Action not implemented in match state.");
         }
+        this.Melds.UpdateMelds(this.AllMeldSprites());
         Thread.Sleep(1000);
     }
 
@@ -362,38 +417,28 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
         if (this.MoveAnswered.Move != MoveKind.SHED) {
             throw new Exception("The bot must discard.");
         }
-        ICard<T, U> card = this.MoveAnswered.CardsMoved.ElementAt(0);
-        Sprite sprite = this.CardToSprite(card);
+        Sprite sprite = this.CardToSprite(this.MoveAnswered.CardsMoved.ElementAt(0));
         Vector2f start = this.Opponents.GetCardPosition(this.Pointer);
-        Vector2f end = this.Piles.GetPilePoint(PileType.DISCARD);
+        Vector2f end = this.Piles.DiscardPos();
         this.Animation = new SlideAnimation(sprite, start, end, 0678.0f);
 
         this.Opponents.UpdateInfo(this.Pointer, this.GameData.CurrentProfile());
         this.Moment = Step.BOT_END;
+        this.MoveAnswered = null;
     }
 
     private void BotEnd() {
-        if (this.MoveAnswered == null) {
-            throw new Exception("Bot should have set this value.");
-        }
-        this.Piles.DiscardCard(this.CardToSprite(this.MoveAnswered.CardsMoved.ElementAt(0)));
+        this.UpdatePiles();
         this.ComputeNextTurn();
-        this.GameData.FilpDiscard();
-        //this.MoveAnswered = null;
-    }
-
-    private void EmptyAskedMove() {
-        this.MoveAsked = new ResultMove<int>(MoveKind.EMPTY, new List<int>(), null, null);
+        this.GameData.FlipDiscard();
+        this.UpdatePiles();
     }
 
     private void HumanPick() {
         this.Piles.Highlight();
         this.NewStatus = "Pick a card.";
-        if ((this.MoveAsked.Move == MoveKind.STOCK) ||
-            (this.MoveAsked.Move == MoveKind.DISCARD))
-        {
+        if ((this.MoveAsked.Move == MoveKind.STOCK) || (this.MoveAsked.Move == MoveKind.DISCARD)) {
             (string? err, this.MoveAnswered) = this.GameData.HumanPlay(this.MoveAsked);
-
             if (err != null) {
                 this.PrevError = err;
                 this.EmptyAskedMove();;
@@ -401,24 +446,21 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
             } else if (this.MoveAnswered == null) {
                 throw new Exception("Error while picking a card.");
             }
-            PileType pt;
+            Vector2f start;
             switch (this.MoveAnswered.Move) {
                 case MoveKind.STOCK:
-                    pt = PileType.STOCK;
+                    start = this.Piles.StockPos();
                     break;
                 case MoveKind.DISCARD:
-                    pt = PileType.DISCARD;
+                    start = this.Piles.DiscardPos();
                     break;
                 default:
                     throw new Exception("Invalid value for the move type.");
             }
-            ICard<T, U> card = this.MoveAnswered.CardsMoved.ElementAt(0);
-            Sprite sprite = this.Piles.GetSprite(pt);
-            //Sprite sprite = this.CardToSprite(card);
-            Vector2f start = this.Piles.GetPilePoint(pt);
             Vector2f end = this.Hand.GetInsertPoint();
+            Sprite sprite = this.SpritePicked();
             this.Animation = new SlideAnimation(sprite, start, end, 0678.0f);
-            this.Piles.PopCard(pt);
+            this.UpdatePiles();
             this.Moment = Step.HUM_PLAY;
             this.Piles.Lowlight();
             this.EmptyAskedMove();
@@ -431,10 +473,11 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
 
     private void HumanPlay() {
         if (this.MoveAnswered != null) {
-            this.Hand.Add(this.CardToSprite(this.MoveAnswered.CardsMoved.ElementAt(0)));
+            //this.Hand.Add(this.CardToSprite(this.MoveAnswered.CardsMoved.ElementAt(0)));
             this.MoveAnswered = null;
             // maybe not
             this.PrevError = "";
+            this.UpdateHand();
         }
         this.NewStatus = "Make a play or shed a card.";
         this.EmptyAskedMove();
@@ -451,15 +494,16 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
             (string? err, this.MoveAnswered) = this.GameData.HumanPlay(this.MoveAsked);
             if (err != null) {
                 this.PrevError = err;
+                this.Hand.ResetHand();
             } else if (this.MoveAnswered == null) {
                 throw new Exception("Wild error building a meld.");
             } else {
-                List<Sprite> ls = this.HumanSprites(this.MoveAnswered.CardsMoved);
-                this.Melds.AddMeld(ls);
-                this.Hand.RemoveCards();
+                List<Sprite> ls = this.CardsToSprites(this.MoveAnswered.CardsMoved);
+                this.Melds.UpdateMelds(this.AllMeldSprites());
+                this.UpdateHand();
             }
-            this.MoveAnswered = null;
             this.EmptyAskedMove();
+            this.MoveAnswered = null;
             this.NewStatus = "Make a play or shed a card.";
             this.Moment = Step.HUM_PLAY;
         }
@@ -467,49 +511,68 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
 
     private void HumanLay() {
         this.NewStatus = "Select the cards to lay off and the meld.";
-        /*
         if (!this.EmptyMove()) {
             (string? err, this.MoveAnswered) = this.GameData.HumanPlay(this.MoveAsked);
             if (err != null) {
                 this.PrevError = err;
+                this.Hand.ResetHand();
             } else if (this.MoveAnswered == null) {
                 throw new Exception("Wild error laying off the cards.");
             } else {
-                List<Sprite> ls = this.HumanSprites(this.MoveAnswered.CardsMoved);
-                this.Melds.AddMeld(ls);
-                this.Hand.RemoveCards();
+                List<Sprite> ls = this.CardsToSprites(this.MoveAnswered.CardsMoved);
+                this.Melds.UpdateMelds(this.AllMeldSprites());
+                this.UpdateHand();
             }
             this.MoveAnswered = null;
             this.EmptyAskedMove();
             this.NewStatus = "Make a play or shed a card.";
             this.Moment = Step.HUM_PLAY;
         }
-        */
+    }
+
+    private void HumanReplace() {
+        this.NewStatus = "Select the wildcard you want an the card to replace it with.";
+        if (!this.EmptyMove()) {
+            (string? err, this.MoveAnswered) = this.GameData.HumanPlay(this.MoveAsked);
+            if (err != null) {
+                this.PrevError = err;
+                this.Hand.ResetHand();
+            } else if (this.MoveAnswered == null) {
+                throw new Exception("Wild error while replacing a wildcard.");
+            } else {
+                List<Sprite> ls = this.CardsToSprites(this.MoveAnswered.CardsMoved);
+                this.Melds.UpdateMelds(this.AllMeldSprites());
+                this.UpdateHand();
+            }
+            this.MoveAnswered = null;
+            this.EmptyAskedMove();
+            this.NewStatus = "Make a play or shed a card.";
+            this.Moment = Step.HUM_PLAY;
+        }
     }
 
     private void HumanDiscard() {
         this.NewStatus = "Select the card to shed.";
         this.PrevError = "";
-        if (this.EmptyMove()) {
-            this.MoveAsked = new ResultMove<int>(MoveKind.SHED, new List<int>(), null, null);
-        }
-        //this.MoveAsked = new ResultMove<int>(MoveKind.DISCARD, new List<int>(), null, null);
-        if (this.MoveAsked.CardsMoved.Count == 1) {
+
+        if (!this.EmptyMove()) {
             (string? err, this.MoveAnswered) = this.GameData.HumanPlay(this.MoveAsked);
             if (err != null) {
                 this.PrevError = err;
                 return;
             } else if (this.MoveAnswered == null) {
-                throw new Exception("I don't know if this should be an excpetion");
+                // This check removest the warning when reading the card for the sprite.
+                throw new Exception("This should never happen.");
             }
-            ICard<T, U> card = this.MoveAnswered.CardsMoved.ElementAt(0);
-            Sprite sprite = this.CardToSprite(card);
+            Sprite sprite = this.CardToSprite(this.MoveAnswered.CardsMoved.ElementAt(0));
             Vector2f start = this.Hand.GetDiscardPoint(this.MoveAsked.CardsMoved.ElementAt(0));
-            Vector2f end = this.Piles.GetPilePoint(PileType.DISCARD);
+            Vector2f end = this.Piles.DiscardPos();
             this.Animation = new SlideAnimation(sprite, start, end, 0678.0f);
-            this.Hand.Shed(this.MoveAsked.CardsMoved.ElementAt(0));
-            this.EmptyAskedMove();
+
+            this.UpdateHand();
             this.Moment = Step.BOT_END;
+            this.EmptyAskedMove();
+            this.MoveAnswered = null;
         }
     }
 
@@ -537,11 +600,25 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
         }
     }
 
+    private List<(string, List<Sprite>)> EndData() {
+        List<PlayerProfile> profiles = this.GameData.PlayerProfiles();
+        List<List<ICard<T, U>>> cards = this.GameData.PlayerHands();
+
+        List<(string, List<Sprite>)> res = new List<(string, List<Sprite>)>(profiles.Count);
+        for (int i = 0; i < profiles.Count; i++) {
+            cards[i].Sort((x, y) => x.CompareTo(y));
+            res.Add((profiles[i].Name, this.CardsToSprites(cards[i])));
+        }
+
+        return res;
+    }
+
     private void CheckWinner(RenderWindow window) {
         if (this.GameData.CurrentHasWon()) {
             string name = this.GameData.CurrentProfile().Name;
-            Console.WriteLine(name + " has won the game.");
-            this.GSManager.ChangeState(window, new MenuState(this.GSManager, window));
+            //Console.WriteLine(name + " has won the game.");
+            this.Moment = Step.END;
+            this.Ending = new EndScreen(window, this.EndData());
         }
     }
 
@@ -554,55 +631,52 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
             this.Buttons.Update(window, this.Moment);
             switch (this.Moment) {
                 case Step.BOT_PICK:
-                    //Console.WriteLine("Bot pick");
                     this.BotPick();
                     break;
                 case Step.BOT_PLAY:
-                    //Console.WriteLine("Bot play");
                     this.BotPlay();
                     this.CheckWinner(window);
                     break;
                 case Step.BOT_DISC:
-                    //Console.WriteLine("Bot disc");
                     this.BotDisc();
                     this.CheckWinner(window);
                     break;
                 case Step.BOT_END:
-                    //Console.WriteLine("Bot end;");
                     this.BotEnd();
                     break;
                 case Step.HUM_PICK:
-                    //Console.WriteLine("Human pick");
                     this.HumanPick();
                     break;
                 case Step.HUM_PLAY:
-                    //Console.WriteLine("Human play");
-                    this.Hand.ResetHand(window);
                     this.HumanPlay();
                     this.CheckWinner(window);
                     break;
                 case Step.HUM_RUN:
                 case Step.HUM_SET:
                     this.HumanMeld();
-                    //Console.WriteLine("Running");
                     break;
                 case Step.HUM_LAYOFF:
                     this.HumanLay();
                     break;
+                case Step.HUM_REPLACE:
+                    this.HumanReplace();
+                    break;
                 case Step.HUM_DISC:
-                    //Console.WriteLine("Human discard");
                     this.HumanDiscard();
                     this.CheckWinner(window);
                     break;
                 default:
-                    //Console.WriteLine("Undefined");
+                    // Undefined
                     break;
             }
         }
 
+        if (this.Ending != null) {
+            this.Ending.Update(window);
+        }
         this.Melds.Update(window, this.Moment);
         this.Hand.Update(window, this.Moment);
-        this.Piles.Update(window);
+        this.Piles.Update(window, this.Moment);
         this.ComputeNewBar(window);
         this.SortRun.Update(window);
         this.SortSet.Update(window);
@@ -610,7 +684,7 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
     }
 
     public override void Draw(RenderWindow window) {
-        window.Draw(this.Background);
+        //window.Draw(this.Background);
         this.Buttons.Render(window);
         this.Melds.Render(window);
         this.Hand.Render(window);
@@ -622,9 +696,16 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
             this.Animation.Render(window);
         }
 
-        if (this.Moment == Step.HUM_PLAY) {
+        if (this.Moment == Step.HUM_PICK ||
+            this.Moment == Step.HUM_PLAY) {
             this.SortRun.Render(window);
             this.SortSet.Render(window);
+        }
+        if (this.Moment == Step.START && this.Start != null) {
+            this.Start.Render(window);
+        }
+        if (this.Moment == Step.END && this.Ending != null) {
+            this.Ending.Render(window);
         }
         this.QuitButton.Render(window);
     }

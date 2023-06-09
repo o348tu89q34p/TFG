@@ -17,6 +17,9 @@ namespace Game {
         private const string Background = "../Assets/Graphics/UI/bg1.png";
         public static Texture BackgroundTexture = new Texture(Background);
 
+        private const string Cross = "../Assets/Graphics/UI/Buttons/cross_button.png";
+        public static Texture CrossTexture = new Texture(Cross);
+
         private const string ActionIdle = ButtonTexturePath + "action_idle.png";
         private const string ActionHover = ButtonTexturePath + "action_hover.png";
         private const string ActionActive = ButtonTexturePath + "action_active.png";
