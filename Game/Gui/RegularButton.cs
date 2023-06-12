@@ -14,14 +14,14 @@ public class RegularButton {
     private Vector2f Position { get; }
     public bool IsHovered { get; private set; }
 
-    public RegularButton(Texture bgNormal, Texture bgHover, string contents, Vector2f position) {
+    public RegularButton(Texture bgNormal, Texture bgHover, string contents, Vector2f position, uint size) {
         this.BgNormal = bgNormal;
         this.BgHover = bgHover;
         this.IsHovered = false;
         this.Position = position;
         this.BgSprite = this.SetSprite(this.BgNormal);
 
-        this.Contents = new Text(contents, FontUtils.ButtonFont, 15) {
+        this.Contents = new Text(contents, FontUtils.ButtonFont, size) {
             FillColor = Color.Black
         };
 
@@ -30,7 +30,11 @@ public class RegularButton {
         float bw = this.BgSprite.GetGlobalBounds().Width/2.0f;
         float bh = this.BgSprite.GetGlobalBounds().Height/2.0f;
 
-        this.Contents.Position = new Vector2f(this.Position.X + bw - cw, this.Position.Y + bh - ch*1.50f);
+        this.Contents.Position = new Vector2f(this.Position.X + bw - cw, this.Position.Y + bh - ch*1.90f);
+    }
+
+    public RegularButton(Texture bgNormal, Texture bgHover, string contents, Vector2f position) :
+        this(TextureUtils.RegularTexture, TextureUtils.RegularHoverTexture, contents, position, 15) {
     }
 
     public RegularButton(string contents, Vector2f position) :
@@ -43,6 +47,10 @@ public class RegularButton {
         };
 
         return sprite;
+    }
+
+    public Vector2f GetPosition() {
+        return this.BgSprite.Position;
     }
 
     public void Update(RenderWindow window) {

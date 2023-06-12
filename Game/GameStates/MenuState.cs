@@ -1,143 +1,139 @@
-using SFML.Audio;
 using SFML.Graphics;
 using SFML.Window;
 using SFML.System;
 
 using Gui;
 
-namespace Game {
-    class MenuState : GameState {
-        private Label StateTitle { get; }
-        private Label NewGameOption { get; }
-        private Label QuitOption { get; }
-        private StateManager GSManager;
+namespace Game;
 
-        public MenuState(StateManager gsManager, RenderWindow window) {
-            this.GSManager = gsManager;
+class MenuState : GameState
+{
+    private Sprite Background { get; }
 
-            // Title.
-            Font titleFont = new Font(FontUtils.TitleFont);
-            if (titleFont == null) {
-                throw new Exception($"Failed to load font: {titleFont}");
-            }
-            Vector2f titlePos = new Vector2f(window.Size.X / 2, 100);
-            Color titleColor = new Color(0, 70, 255);
+    private Sprite Title { get; }
+    private RectangleShape ButtonsBg { get; }
+    private RegularButton PlayButton { get; }
+    private RegularButton LearnButton { get; }
+    private RegularButton QuitButton { get; }
+    private StateManager GSManager;
 
-            this.StateTitle = new Label("Remigio Challenge", titlePos, Origin.CENTER, 80, titleFont, titleColor, titleColor, titleColor);
+    public MenuState(StateManager gsManager, RenderWindow window) {
+        this.GSManager = gsManager;
 
-            // Options.
-            Font optionsFont = new Font(FontUtils.TextFont1);
-            if (optionsFont == null) {
-                throw new Exception($"Failed to load font: {optionsFont}");
-            }
+        this.Background = new Sprite(TextureUtils.BackgroundTexture);
 
-            Vector2f optionPos = new Vector2f(window.Size.X/2, window.Size.Y/2);
-            Color hoverColor = new Color(200, 0, 12);
-            this.NewGameOption = new Label("Partida nova", optionPos, Origin.CENTER, 60, optionsFont, titleColor, hoverColor, titleColor);
-            optionPos = new Vector2f(optionPos.X, optionPos.Y + 100);
-            this.QuitOption = new Label("Sortir", optionPos, Origin.CENTER, 60, optionsFont, titleColor, hoverColor, titleColor);
+        // Title.
+        Vector2f titlePos = new Vector2f(window.Size.X / 2, 100);
+        Color titleColor = new Color(0, 70, 255);
 
-            window.SetMouseCursorVisible(true);
+        //this.StateTitle = new Label("Remigio Challenge", titlePos, Origin.CENTER, 80, titleFont, titleColor, titleColor, titleColor);
+        this.Title = new Sprite(TextureUtils.TitleTexture) {
+            Position = new Vector2f(0.0f, 60.0f)
+        };
 
-            this.BindEvents(window);
+        float rectW = TextureUtils.IdleTexture.Size.X + 40.0f;
+        float rectH = TextureUtils.IdleTexture.Size.Y*3 + 20.0f*2 + 2*30.0f;
+        float rectX = window.Size.X/2.0f - rectW/2.0f;
+        float rectY = window.Size.Y - rectH - 30.0f;
+        this.ButtonsBg = new RectangleShape(new Vector2f(rectW, rectH)) {
+            Position = new Vector2f(rectX, rectY),
+            FillColor = new Color(0, 0, 0, 100),
+            OutlineColor = new Color(0, 200, 0)
+        };
+
+        Texture idle = TextureUtils.IdleTexture;
+        Texture hover = TextureUtils.HoverTexture;
+        float buttonX = rectX + this.ButtonsBg.GetGlobalBounds().Width/2.0f - idle.Size.X/2.0f;
+        float buttonY = rectY + 20.0f;
+        float buttonH = TextureUtils.IdleTexture.Size.Y;
+
+        Vector2f playPos = new Vector2f(buttonX, buttonY);
+        this.PlayButton = new RegularButton(idle, hover, "play", playPos, 30);
+        Vector2f learnPos = new Vector2f(buttonX, playPos.Y + idle.Size.Y + 30.0f);
+        this.LearnButton = new RegularButton(idle, hover, "tutorial", learnPos, 30);
+        Vector2f quitPos = new Vector2f(buttonX, learnPos.Y + idle.Size.Y + 30.0f);
+        this.QuitButton = new RegularButton(idle, hover, "quit", quitPos, 30);
+
+
+        window.SetMouseCursorVisible(true);
+
+        this.BindEvents(window);
+    }
+
+    // The events that can occur on a main menu.
+    public override void BindEvents(RenderWindow window) {
+        window.Closed += new EventHandler(OnWindowClose);
+        window.KeyPressed += new EventHandler<KeyEventArgs>(OnKeyPress);
+        window.MouseButtonPressed += new EventHandler<MouseButtonEventArgs>(OnMouseButtonPress);
+    }
+
+    public override void UnbindEvents(RenderWindow window) {
+        window.Closed -= new EventHandler(OnWindowClose);
+        window.KeyPressed -= new EventHandler<KeyEventArgs>(OnKeyPress);
+        window.MouseButtonPressed -= new EventHandler<MouseButtonEventArgs>(OnMouseButtonPress);
+    }
+
+    public void OnWindowClose(object? sender, EventArgs e) {
+        if (sender == null) {
+            return;
         }
 
-        // The events that can occur on a main menu.
-        public override void BindEvents(RenderWindow window) {
-            window.Closed += new EventHandler(OnWindowClose);
-            window.KeyPressed += new EventHandler<KeyEventArgs>(OnKeyPress);
-            window.MouseButtonPressed += new EventHandler<MouseButtonEventArgs>(OnMouseButtonPress);
-        }
+        RenderWindow window = (RenderWindow)sender;
+        window.Close();
+    }
 
-        public override void UnbindEvents(RenderWindow window) {
-            window.Closed -= new EventHandler(OnWindowClose);
-            window.KeyPressed -= new EventHandler<KeyEventArgs>(OnKeyPress);
-            window.MouseButtonPressed -= new EventHandler<MouseButtonEventArgs>(OnMouseButtonPress);
+    public void OnKeyPress(object? sender, KeyEventArgs e) {
+        if (sender == null) {
+            return;
         }
+        // Maybe add something for bg music.
+        // No key events are considered.
+        /*
+          RenderWindow window = (RenderWindow)sender;
 
-        public void OnWindowClose(object? sender, EventArgs e) {
-            if (sender == null) {
-                return;
+          if (e.Code == Keyboard.Key.Escape) {
+          window.Close();
+          }
+          if (e.Code == Keyboard.Key.W) {
+          GSManager.ChangeState(window, new CreateState(GSManager));
+          }
+          if (e.Code == Keyboard.Key.K) {
+          GSManager.ChangeState(window, new LoseState(GSManager));
+          }
+        */
+    }
+
+    public void OnMouseButtonPress(object? sender, MouseButtonEventArgs e) {
+        if (sender == null) {
+            return;
+        }
+        RenderWindow window = (RenderWindow)sender;
+
+        if (e.Button == Mouse.Button.Left) {
+            if (this.PlayButton.IsHovered) {
+                this.GSManager.ChangeState(window, new CreateState(this.GSManager, window));
             }
-
-            RenderWindow window = (RenderWindow)sender;
-            window.Close();
-        }
-
-        public void OnKeyPress(object? sender, KeyEventArgs e) {
-            if (sender == null) {
-                return;
+            if (this.LearnButton.IsHovered) {
+                this.GSManager.ChangeState(window, new LearnState(this.GSManager, window));
             }
-            // Maybe add something for bg music.
-            // No key events are considered.
-            /*
-            RenderWindow window = (RenderWindow)sender;
-
-            if (e.Code == Keyboard.Key.Escape) {
+            if (this.QuitButton.IsHovered) {
                 window.Close();
             }
-            if (e.Code == Keyboard.Key.W) {
-                GSManager.ChangeState(window, new CreateState(GSManager));
-            }
-            if (e.Code == Keyboard.Key.K) {
-                GSManager.ChangeState(window, new LoseState(GSManager));
-            }
-            */
         }
+    }
 
-        public void OnMouseButtonPress(object? sender, MouseButtonEventArgs e) {
-            if (sender == null) {
-                return;
-            }
-            RenderWindow window = (RenderWindow)sender;
+    public override void Update(RenderWindow window) {
+        this.PlayButton.Update(window);
+        this.LearnButton.Update(window);
+        this.QuitButton.Update(window);
+    }
 
-            if (e.Button == Mouse.Button.Left) {
-                if (this.NewGameOption.MouseOn) {
-                    this.GSManager.ChangeState(window, new CreateState(this.GSManager, window));
-                }
-
-                if (this.QuitOption.MouseOn) {
-                    window.Close();
-                }
-            }
-        }
-
-        public override void Update(RenderWindow window) {
-            this.StateTitle.Update(window);
-            this.NewGameOption.Update(window);
-            this.QuitOption.Update(window);
-        }
-
-        public override void Draw(RenderWindow window) {
-            this.StateTitle.Render(window);
-            this.NewGameOption.Render(window);
-            this.QuitOption.Render(window);
-            //window.Draw();
-            /*
-            if (!mouseOnFindButton) {
-                this._findText.FillColor = new Color(0, 70, 255);
-            } else {
-                this._findText.FillColor = new Color(255, 0, 0);
-            }
-
-            if (!mouseOnCreateButton) {
-                this._createText.FillColor = new Color(100, 70, 255);
-            } else {
-                this._createText.FillColor = new Color(255, 0, 0);
-            }
-
-            if (!mouseOnQuitButton) {
-                this._quitText.FillColor = new Color(0, 70, 255);
-            } else {
-                this._quitText.FillColor = new Color(255, 0, 0);
-            }
-            */
-
-            /*
-            window.Draw(this._findText);
-            window.Draw(this._createText);
-            window.Draw(this._quitText);
-            */
-        }
+    public override void Draw(RenderWindow window) {
+        window.Draw(this.Background);
+        window.Draw(this.Title);
+        window.Draw(this.ButtonsBg);
+        this.PlayButton.Render(window);
+        this.LearnButton.Render(window);
+        this.QuitButton.Render(window);
     }
 }

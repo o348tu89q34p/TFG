@@ -18,7 +18,7 @@ public class EndScreen {
     private bool HoverTop { get; set; }
     private bool DrawBody { get; set; }
 
-    public EndScreen(RenderWindow window, List<(string, List<Sprite>)> info) {
+    public EndScreen(RenderWindow window, string winner, List<(string, List<Sprite>)> info) {
         int n = info.Count;
         float rowHeight = TextureUtils.CardHeight/2.5f + 15.0f;
         float space = 5.0f;
@@ -29,14 +29,14 @@ public class EndScreen {
         // Make its vertical alignment fixed.
         this.Bg = new RectangleShape(new Vector2f(bgWidth, bgHeight)) {
             Position = new Vector2f(window.Size.X/2.0f - bgWidth/2.0f, 50.0f),
-            FillColor = new Color(200, 123, 58)
+            FillColor = new Color(118, 182, 52),
         };
 
         this.TopBar = new RectangleShape(new Vector2f(bgWidth, 20.0f)) {
             Position = this.Bg.Position
         };
 
-        this.Title = new Text("Game results:", FontUtils.StatusFont, 20) {
+        this.Title = new Text(winner + " won the game.", FontUtils.StatusFont, 20) {
             Position = new Vector2f(this.Bg.Position.X + 10.0f, this.Bg.Position.Y + 30.0f),
             FillColor = Color.Black
         };

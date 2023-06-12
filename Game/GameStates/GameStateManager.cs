@@ -1,36 +1,37 @@
 using SFML.Graphics;
 
-namespace Game {
-    class StateManager {
-        private GameState State { get; set; }
+namespace Game;
 
-        public StateManager(RenderWindow w) {
-            this.State = new MenuState(this, w);
+class StateManager
+{
+    private GameState State { get; set; }
 
-            // Print the state at every change.
-            this.GetCurrentStateInfo();
-        }
+    public StateManager(RenderWindow w) {
+        this.State = new MenuState(this, w);
 
-        public void ChangeState(RenderWindow w, GameState gameState) {
-            // Unbind state event handlers.
-            this.State.UnbindEvents(w);
+        // Print the state at every change.
+        this.GetCurrentStateInfo();
+    }
 
-            // Remove the current state.
-            this.State = gameState;
+    public void ChangeState(RenderWindow w, GameState gameState) {
+        // Unbind state event handlers.
+        this.State.UnbindEvents(w);
 
-            this.GetCurrentStateInfo();
-        }
+        // Remove the current state.
+        this.State = gameState;
 
-        public void GetCurrentStateInfo() {
-            Console.WriteLine("GameState: " + this.State);
-        }
+        this.GetCurrentStateInfo();
+    }
 
-        public void Update(RenderWindow w) {
-            this.State.Update(w);
-        }
+    public void GetCurrentStateInfo() {
+        Console.WriteLine("GameState: " + this.State);
+    }
 
-        public void Draw(RenderWindow w) {
-            this.State.Draw(w);
-        }
+    public void Update(RenderWindow w) {
+        this.State.Update(w);
+    }
+
+    public void Draw(RenderWindow w) {
+        this.State.Draw(w);
     }
 }

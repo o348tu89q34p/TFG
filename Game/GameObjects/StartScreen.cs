@@ -18,8 +18,8 @@ public class StartScreen {
         Vector2f boxPos = new Vector2f(window.Size.X/2.0f - 100.0f, window.Size.Y/2.0f - 50.0f);
         this.Box = new RectangleShape(new Vector2f(200.0f, 100.0f)) {
             Position = boxPos,
-            FillColor = new Color(200, 123, 50),
-            OutlineColor = new Color(123, 34, 159),
+            FillColor = new Color(118, 182, 52),
+            OutlineColor = new Color(255, 247, 21),
             OutlineThickness = 4.0f
         };
     }

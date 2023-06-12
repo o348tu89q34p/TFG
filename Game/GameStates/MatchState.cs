@@ -110,11 +110,11 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
         // End graphic hand.
 
         // Opponents.
-        this.Opponents = new OpponentsInfo(window, this.GameData.GetOpponents());
+        this.Opponents = new OpponentsInfo(window, this.CardBack, this.GameData.GetOpponents());
         // End opponents.
 
         // Status bar.
-        this.Bar = new StatusBar(window, "Initial message");
+        this.Bar = new StatusBar(window, "Welcome to Remigio Challenge");
         // End status bar.
 
         // Piles.
@@ -151,7 +151,7 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
                                              TextureUtils.SquareHoverTexture,
                                              TextureUtils.SortSetTexture,
                                              new Vector2f(leftRigth, bottom));
-        this.QuitButton = new RegularButton(TextureUtils.SquareTexture, TextureUtils.SquareHoverTexture, "quit", new Vector2f(10.0f, 10.0f));
+        this.QuitButton = new RegularButton(TextureUtils.SquareTexture, TextureUtils.SquareHoverTexture, "abandon", new Vector2f(10.0f, 10.0f));
 
         window.SetMouseCursorVisible(true);
 
@@ -486,7 +486,7 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
 
     private void HumanMeld() {
         if (this.Moment == Step.HUM_RUN) {
-            this.NewStatus = "Select the cards that form the run.";
+            this.NewStatus = "Select the cards that form the run in ascending order.";
         } else if (this.Moment == Step.HUM_SET) {
             this.NewStatus = "Select the cards that form the set.";
         }
@@ -618,7 +618,8 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
             string name = this.GameData.CurrentProfile().Name;
             //Console.WriteLine(name + " has won the game.");
             this.Moment = Step.END;
-            this.Ending = new EndScreen(window, this.EndData());
+            this.Ending = new EndScreen(window, this.GameData.CurrentProfile().Name, this.EndData());
+            this.NewStatus = "The game is over!";
         }
     }
 
@@ -684,7 +685,7 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
     }
 
     public override void Draw(RenderWindow window) {
-        //window.Draw(this.Background);
+        window.Draw(this.Background);
         this.Buttons.Render(window);
         this.Melds.Render(window);
         this.Hand.Render(window);

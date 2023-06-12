@@ -5,10 +5,10 @@ namespace Domain {
 
     public class FrenchSuit : Scale {
         private static string[] _data = {
-            "clubs",
-            "diamonds",
+            "spades",
             "hearts",
-            "spades"
+            "diamonds",
+            "clubs"
         };
 
         public override string[] Data {
@@ -40,9 +40,9 @@ namespace Domain {
 
     public class SpanishSuit : Scale {
         private static string[] _data = {
-            "sowrds",
-            "cups",
             "coins",
+            "cups",
+            "sowrds",
             "clubs"
         };
 

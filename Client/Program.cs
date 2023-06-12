@@ -4,7 +4,7 @@ using Game;
 namespace Client {
     class Program {
         static void Main(string[] args) {
-            GameLoop game = new GameLoop(1024, 768, "Remigio Online");
+            GameLoop game = new GameLoop(1366, 768, "Remigio Challenge");
             game.Run(60);
         }
     }

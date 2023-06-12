@@ -35,23 +35,28 @@ public class GameState<T, U>
             }
 
             // Deal cards.
+            /*
             // This deals nCards to each player.
             for (int i = 0; i < Rules.NumPlayers; i++) {
                 for (int j = 0; j < nCards; j++) {
                     this.Players[i].Add(this.Stock.Pop());
                 }
             }
+            */
 
-            /*
             // This deals nCards times one card per player.
             for (int i = 0; i < nCards; i++) {
                 for (int j = 0; j < Rules.NumPlayers; j++) {
                     this.Players[j].Add(this.Stock.Pop());
                 }
             }
-            */
 
             this.SufflePlayers();
+
+            Console.WriteLine("Names:");
+            for (int i = 0; i < this.Players.Length; i++) {
+                Console.WriteLine(this.Players[i].GetProfile().Name);
+            }
 
             if (!this.Rules.PlayerR.NeedsOut) {
                 this.Discard.Push(this.Stock.Pop());

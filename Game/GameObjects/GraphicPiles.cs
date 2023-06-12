@@ -27,7 +27,7 @@ public class GraphicPiles {
         float bgWidth = (TextureUtils.CardWidth + 30.0f);
         float bgHeight = (TextureUtils.CardHeight + TextureUtils.CardHeight + 40.0f);
         float posX = 30.0f;
-        float posY = ((float)window.Size.Y)*3.0f/4.0f - bgHeight/2.0f;
+        float posY = window.Size.Y - bgHeight - 50.0f;
         this.Background = new RectangleShape(new Vector2f(bgWidth, bgHeight)) {
             Position = new Vector2f(posX, posY),
             FillColor = new Color(0, 0, 0, 80)

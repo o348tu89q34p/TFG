@@ -18,7 +18,7 @@ class SingleOpponent {
     private const uint FontSize = 20;
     private const float VertOff = 0.0f;
 
-    public SingleOpponent(PlayerProfile profile, Vector2f pos) {
+    public SingleOpponent(PlayerProfile profile, Texture back, Vector2f pos) {
         this.Amount = profile.NumCards;
         Texture NameTex = TextureUtils.NamePlateTexture;
         this.NameBg = new Sprite(NameTex) {
@@ -38,7 +38,7 @@ class SingleOpponent {
         float y = this.NameBg.Position.Y + this.NumCards.GetGlobalBounds().Height/5.0f;
         this.NumCards.Position = new Vector2f(x, y);
 
-        Texture BackTex = TextureUtils.FrenchBackTexture;
+        Texture BackTex = back;
         this.BackCard = new Sprite(BackTex) {
             Position = new Vector2f(pos.X, pos.Y + (float)NameTex.Size.Y)
         };

@@ -31,7 +31,7 @@ public class Rules<T, U> where T : Scale, new() where U : Scale, new()
         }
 
         if (((numSuits*numRanks)*numDecks + numWc) < (numCards*numPlayers + margin)) {
-            throw new Exception("The number of cards per player cannot be met with the cards available.");
+            throw new Exception("Not enough cards for each player.");
         }
 
         if (minRunLen < 0 || minRunLen > numRanks) {

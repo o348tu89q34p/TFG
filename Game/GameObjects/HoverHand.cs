@@ -65,7 +65,6 @@ public class HoverHand {
     public void Demote(int pos) {
         for (int i = 0; i < this.Cards.Count; i++) {
             if (pos == this.Positions[i]) {
-                Console.WriteLine("Just demoted");
                 this.Cards[i].UnTake();
                 this.Cards.RemoveAt(i);
                 this.Positions.RemoveAt(i);

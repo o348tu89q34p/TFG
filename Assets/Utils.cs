@@ -11,11 +11,21 @@ namespace Game {
     }
 
     public static class TextureUtils {
+        private const string TitlePath = "../Assets/Graphics/UI/title.png";
+        public static Texture TitleTexture = new Texture(TitlePath);
+
         // Buttons.
         private const string ButtonTexturePath = "../Assets/Graphics/UI/Buttons/";
 
-        private const string Background = "../Assets/Graphics/UI/bg1.png";
+        private const string NextButtonsPath = ButtonTexturePath + "next_buttons.png";
+        public static Image NextButtonsImage = new Image(NextButtonsPath);
+        //public static Texture NextButtonsTexture = new Texture(NextButtonsPath);
+
+        private const string Background = "../Assets/Graphics/UI/GreenDark.png";
         public static Texture BackgroundTexture = new Texture(Background);
+
+        private const string Information = "../Assets/Graphics/UI/tutorial.png";
+        public static Texture InformationTexture = new Texture(Information);
 
         private const string Cross = "../Assets/Graphics/UI/Buttons/cross_button.png";
         public static Texture CrossTexture = new Texture(Cross);
@@ -46,8 +56,8 @@ namespace Game {
 
         // Cards.
         private const string CardPath = "../Assets/Graphics/Cards/";
-        public const int CardWidth = 94;
-        public const int CardHeight = 130;
+        public const int CardWidth = 100;
+        public const int CardHeight = 140;
 
         private const string EmptyCard = CardPath + "empty.png";
         public static Texture EmptyTexture = new Texture(EmptyCard);
@@ -60,9 +70,9 @@ namespace Game {
         public static Texture FrenchBackTexture = new Texture(FrenchBack);
 
         // Change the file names in this section.
-        private const string SpanishFace = CardPath + "french.png";
-        private const string SpanishWildFace = CardPath + "french_joker.png";
-        private const string SpanishBack = CardPath + "french_back.png";
+        private const string SpanishFace = CardPath + "spanish.png";
+        private const string SpanishWildFace = CardPath + "spanish_joker.png";
+        private const string SpanishBack = CardPath + "spanish_back.png";
         public static Texture SpanishFaceTexture = new Texture(SpanishFace);
         public static Texture SpanishJokerTexture = new Texture(SpanishWildFace);
         public static Texture SpanishBackTexture = new Texture(SpanishBack);

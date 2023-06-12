@@ -28,27 +28,6 @@ namespace Domain {
                 }
                 this.First = low;
                 this.Last = high;
-                /*
-                NaturalCard<T, U> firstCard = (NaturalCard<T, U>)ICard<T, U>.Copy(first);
-                for (int i = pos - 1; i >= 0; i--) {
-                    ICard<T, U> aux = hand.GetAt(i);
-                    firstCard.Prev(false, rules.CanWrap);
-                    if (aux.IsNatural() && !firstCard.Equals(aux)) {
-                        throw new ArgumentException("Invalid run.");
-                    }
-                }
-                this.First = firstCard;
-
-                NaturalCard<T, U> lastCard = (NaturalCard<T, U>)ICard<T, U>.Copy(first);
-                for (int i = pos + 1; i < hand.Size(); i++) {
-                    ICard<T, U> aux = hand.GetAt(i);
-                    lastCard.Next(false, rules.CanWrap);
-                    if (aux.IsNatural() && !lastCard.Equals(aux)) {
-                        throw new ArgumentException("Invalid run.");
-                    }
-                }
-                this.Last = lastCard;
-                */
 
                 this.Cards = new LinkedList<ICard<T, U>>();
                 for (int i = 0; i < hand.Size(); i++) {
@@ -88,43 +67,87 @@ namespace Domain {
 
             delegate LinkedListNode<ICard<T, U>> Adder(ICard<T, U> c);
 
+            private (int, int) CardToInt(ICard<T, U> card) {
+                if (card.IsWild()) {
+                    return (-1, -1);
+                }
+                return (card.GetSuit().Position(), card.GetRank().Position());
+            }
+
+            private (int, int)[] HandToInts(ArrayHand<T, U> hand) {
+                (int, int)[] res = new (int, int)[hand.Size()];
+
+                for (int i = 0; i < hand.Size(); i++) {
+                    res[i] = this.CardToInt(hand.GetAt(i));
+                }
+
+                return res;
+            }
+
             public void Add(ArrayHand<T, U> hand) {
-                if (this.Cards.Count + hand.Size() > this.Rules.MaxRunLen) {
+                if (!this.Rules.CanWrap && (this.Cards.Count + hand.Size() > this.Rules.MaxRunLen)) {
                     throw new ArgumentException("The cards do not fit in the run.");
                 }
+
                 if (!this.Rules.MultWc && (this.NumWc + hand.NumWc) > 1) {
                     throw new ArgumentException("The cards make the set have multiple wild cards.");
                 }
 
-                var (first, last) = this.RunEdges(hand);
-                if (first == null || last == null) {
-                    throw new ArgumentException("No natural cards in hand.");
-                }
+                NaturalCard<T, U> guide = (NaturalCard<T, U>)ICard<T, U>.Copy(this.First);
+                guide.Prev(false, this.Rules.CanWrap);
 
-                // Watch.
-                try {
-                    last.Next(false, this.Rules.CanWrap);
-                    first.Prev(false, this.Rules.CanWrap);
-                } catch {
-                    throw new ArgumentException("The wrapping case.");
-                }
-                Adder adder;
-                if (this.First.CompareTo(last) == 0) {
-                    adder = this.Cards.AddFirst;
-                    hand.Reverse();
-                } else if (this.Last.CompareTo(first) == 0) {
-                    adder = this.Cards.AddLast;
-                } else {
-                    throw new ArgumentException("Hand not contiguous to meld.");
-                }
+                int count = hand.Size() - 1;
+                bool fit = true;
 
-                for (int i = 0; i < hand.Size(); i++) {
-                    ICard<T, U> c = hand.GetAt(i);
-                    adder(c);
-                    if (c.IsWild()) {
-                        this.NumWc =+ 1;
+                while (count >= 0 && fit) {
+                    if (hand.GetAt(count).IsNatural()) {
+                        fit = hand.GetAt(count).Equals(guide);
+                    }
+                    count--;
+                    if (count >= 0) {
+                        if (guide.GetRank().IsFirst() && !this.Rules.CanWrap) {
+                            throw new ArgumentException("No wraping below.");
+                        }
+                        guide.Prev(false, this.Rules.CanWrap);
                     }
                 }
+
+                if (fit) {
+                    this.First = guide;
+                    for (int i = hand.Size() - 1; i >= 0; i--) {
+                        this.Cards.AddFirst(hand.GetAt(i));
+                    }
+                    return;
+                }
+
+                guide = (NaturalCard<T, U>)ICard<T, U>.Copy(this.Last);
+                guide.Next(false, this.Rules.CanWrap);
+
+                count = 0;
+                fit = true;
+
+                while (count < hand.Size() && fit) {
+                    if (hand.GetAt(count).IsNatural()) {
+                        fit = hand.GetAt(count).Equals(guide);
+                    }
+                    count++;
+                    if (count < hand.Size()) {
+                        if (guide.GetRank().IsLast() && !this.Rules.CanWrap) {
+                            throw new ArgumentException("No wraping above.");
+                        }
+                        guide.Next (false, this.Rules.CanWrap);
+                    }
+                }
+
+                if (fit) {
+                    this.Last = guide;
+                    for (int i = 0; i < hand.Size(); i++) {
+                        this.Cards.AddLast(hand.GetAt(i));
+                    }
+                    return;
+                }
+
+                throw new ArgumentException("The cards do not form a contiguous run.");
             }
 
             public WildCard<T, U> Replace(ICard<T, U> card, int pos) {

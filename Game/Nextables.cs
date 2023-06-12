@@ -55,7 +55,7 @@ namespace Game {
 
         public override string ToString() {
             if (this.Val) {
-                return "Sí";
+                return "Yes";
             } else {
                 return "No";
             }
