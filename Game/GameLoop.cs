@@ -83,23 +83,11 @@ public class GameLoop {
 
     private void Render() {
         this.Window.Clear();
-        this.DebugBackground();
+        //this.DebugBackground();
         this.GSManager.Draw(this.Window);
         this.Window.Display();
     }
 
-    //Window events.
     private void Window_KeyPressed(object? sender, KeyEventArgs e) {
-        /*
-        // Take care of the case when the object is null.
-        if (sender == null) {
-        return;
-        }
-
-        var window = (Window)sender;
-        if (e.Code == Keyboard.Key.Escape) {
-        window.Close();
-        }
-        */
     }
 }

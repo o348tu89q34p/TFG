@@ -24,7 +24,7 @@ class StateManager
     }
 
     public void GetCurrentStateInfo() {
-        Console.WriteLine("GameState: " + this.State);
+        //Console.WriteLine("GameState: " + this.State);
     }
 
     public void Update(RenderWindow w) {

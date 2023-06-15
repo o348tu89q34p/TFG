@@ -33,7 +33,6 @@ namespace Domain {
 
                 (bool canAdd, string msg) = this.ValidateSet(hand);
                 if (!canAdd) {
-                    Console.WriteLine("Caought you!");
                     throw new ArgumentException(msg);
                 }
 

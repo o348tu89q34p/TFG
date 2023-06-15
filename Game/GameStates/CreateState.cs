@@ -41,11 +41,11 @@ class CreateState : GameState
         float space = 70.0f;
 
         Vector2f dims = new Vector2f(tipWidth, 40.0f);
-        var optDeck = new NextableStrings(new string[]{"Spanish", "French"}, 1);
+        var optDeck = new NextableStrings(new string[]{"Spanish", "French"}, 0);
         this.OptDeck = new NewNextOption<Nextable<string>, string>("Deck type", optDeck, new Vector2f(xLeft, lTop + space), dims);
         lTop += space;
 
-        var optNumPlayers = new NextableInt(2, 8, 2);
+        var optNumPlayers = new NextableInt(2, 8, 4);
         this.OptNumPlayers = new NewNextOption<Nextable<int>, int>("Number of players", optNumPlayers, new Vector2f(xLeft, lTop + space), dims);
         lTop += space;
 
@@ -53,11 +53,11 @@ class CreateState : GameState
         this.OptNumDecks = new NewNextOption<Nextable<int>, int>("Number of decks", optNumDecks, new Vector2f(xLeft, lTop + space), dims);
         lTop += space;
 
-        var optNumWilds = new NextableInt(0, 10, 10);
+        var optNumWilds = new NextableInt(0, 10, 0);
         this.OptNumWilds = new NewNextOption<Nextable<int>, int>("Number of wild cards", optNumWilds, new Vector2f(xLeft, lTop + space), dims);
         lTop += space;
 
-        var optNumCards = new NextableInt(1, 109, 20);
+        var optNumCards = new NextableInt(1, 109, 10);
         this.OptNumCards = new NewNextOption<Nextable<int>, int>("Cards per player", optNumCards, new Vector2f(xLeft, lTop + space), dims);
         lTop += space;
 
@@ -180,7 +180,6 @@ class CreateState : GameState
                         this.GSManager.ChangeState(window, new MatchState<FrenchSuit, FrenchRank>(this.GSManager, window, r));
                     }
                 } catch (Exception ex) {
-                    Console.WriteLine(ex.StackTrace);
                     this.Message = this.NewMessage(window, ex.Message);
                 }
             }

@@ -10,6 +10,41 @@ public class Brain<T, U> where T : Scale, new() where U : Scale, new()
         this.Rules = rules;
     }
 
+    // hand can be sorted or not.
+    private List<List<ICard<T, U>>> HandByRank(List<ICard<T, U>> hand) {
+        List<List<ICard<T, U>>> ranks = new List<List<ICard<T, U>>>(5);
+        for (int i = 0; i < ranks.Count; i++) {
+            // Create the lists in the list.
+        }
+
+        for (int i = 0; i < hand.Count; i++) {
+            ICard<T, U> c = hand[i];
+            if (c.IsWild()) {
+                ranks[4].Add(c);
+            } else {
+                ranks[c.GetSuit().Position()].Add(c);
+            }
+        }
+
+        return ranks;
+    }
+
+    /*
+    private List<List<ICard<T, U>>> HandBySuit(List<ICard<T, U>> hand) {
+        List<List<ICard<T, U>>> suits = new List<List<ICard<T, U>>>();
+        for (int i = 0; i < hand.Count; i++) {
+            ICard<T, U> c = hand[i];
+            if (c.IsWild()) {
+                suits[4].Add(c);
+            } else {
+                suits[c.GetSuit().Position()].Add(c);
+            }
+        }
+
+        return ranks;
+    }
+    */
+
     // Pair each card with its current position.
     private List<(ICard<T, U>, int)> NumberCards(ArrayHand<T, U> hand) {
         List<(ICard<T, U>, int)> res = new List<(ICard<T, U>, int)>(hand.Size());

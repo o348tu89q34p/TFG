@@ -86,21 +86,6 @@ class MenuState : GameState
         if (sender == null) {
             return;
         }
-        // Maybe add something for bg music.
-        // No key events are considered.
-        /*
-          RenderWindow window = (RenderWindow)sender;
-
-          if (e.Code == Keyboard.Key.Escape) {
-          window.Close();
-          }
-          if (e.Code == Keyboard.Key.W) {
-          GSManager.ChangeState(window, new CreateState(GSManager));
-          }
-          if (e.Code == Keyboard.Key.K) {
-          GSManager.ChangeState(window, new LoseState(GSManager));
-          }
-        */
     }
 
     public void OnMouseButtonPress(object? sender, MouseButtonEventArgs e) {

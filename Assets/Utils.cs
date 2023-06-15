@@ -4,9 +4,8 @@ namespace Game {
     public static class FontUtils {
         private const string fontPath = "../Assets/Fonts/";
         public const string TitleFont = fontPath + "aAhaWow.ttf";
-        //public const string TextFont1 = fontPath + "LinLibertine_aBS.ttf";
-        public const string TextFont1 = fontPath + "Garute-Medium.ttf";
-        public static Font StatusFont = new Font(fontPath + "Garute-Medium.ttf");
+        public const string TextFont1 = fontPath + "MinSans-Regular.ttf";
+        public static Font StatusFont = new Font(fontPath + "MinSans-Regular.ttf");
         public static Font ButtonFont = new Font(fontPath + "Bebas-Regular.ttf");
     }
 
