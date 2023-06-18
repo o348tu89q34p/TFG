@@ -1,5 +1,8 @@
 # Continguts  
 Branca corresponent al lliurable parcial produït a la PAC 4.  
+
+# Executable
+[Descarrega l'executable](https://github.com/o348tu89q34p/TFG/releases/tag/v1.0.0)  
   
 # Requeriments  
 .NET 6.0 o posterior  

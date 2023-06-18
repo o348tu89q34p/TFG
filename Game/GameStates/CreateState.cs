@@ -45,19 +45,19 @@ class CreateState : GameState
         this.OptDeck = new NewNextOption<Nextable<string>, string>("Deck type", optDeck, new Vector2f(xLeft, lTop + space), dims);
         lTop += space;
 
-        var optNumPlayers = new NextableInt(2, 8, 2);
+        var optNumPlayers = new NextableInt(2, 8, 4);
         this.OptNumPlayers = new NewNextOption<Nextable<int>, int>("Number of players", optNumPlayers, new Vector2f(xLeft, lTop + space), dims);
         lTop += space;
 
-        var optNumDecks = new NextableInt(1, 4, 4);
+        var optNumDecks = new NextableInt(1, 4, 2);
         this.OptNumDecks = new NewNextOption<Nextable<int>, int>("Number of decks", optNumDecks, new Vector2f(xLeft, lTop + space), dims);
         lTop += space;
 
-        var optNumWilds = new NextableInt(0, 10, 10);
+        var optNumWilds = new NextableInt(0, 10, 4);
         this.OptNumWilds = new NewNextOption<Nextable<int>, int>("Number of wild cards", optNumWilds, new Vector2f(xLeft, lTop + space), dims);
         lTop += space;
 
-        var optNumCards = new NextableInt(1, 109, 40);
+        var optNumCards = new NextableInt(1, 109, 10);
         this.OptNumCards = new NewNextOption<Nextable<int>, int>("Cards per player", optNumCards, new Vector2f(xLeft, lTop + space), dims);
         lTop += space;
 
