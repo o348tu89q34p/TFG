@@ -105,24 +105,24 @@ public class GraphicHand {
     }
 
 
-    public List<int>? ReadToHover() {
+    public (List<int>?, bool) ReadToHover() {
+        if (this.Button != null && this.Button.IsHovered) {
+            return (this.Hover.GetPositions(), true);
+        }
+
         int pos = 0;
         foreach (GraphicCard c in this.Cards) {
             if (c.IsTaken() && c.HoveredCross) {
                 this.Hover.Demote(pos);
-                return null;
+                return (null, false);
             } else if (c.IsHovered) {
                 this.Hover.Add(c, pos);
-                return null;
+                return (null, false);
             }
             pos++;
         }
 
-        if (this.Button != null && this.Button.IsHovered) {
-            return this.Hover.GetPositions();
-        }
-
-        return null;
+        return (null, false);
     }
 
     // On click action for discard.

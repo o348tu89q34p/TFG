@@ -5,7 +5,7 @@ public class SinglePlayer<T, U> where T : Scale, new() where U : Scale, new()
     private PlayerRules Rules { get; }
     private ArrayHand<T, U> Hand { get; }
     private string Name { get; }
-    public bool CameOut { get; }
+    public bool CameOut { get; set; }
     public bool HasPicked { get; set; }
     private ICard<T, U>? Picked { get; set; }
     private ResultMove<int> Move { get; set; }
@@ -77,6 +77,7 @@ public class SinglePlayer<T, U> where T : Scale, new() where U : Scale, new()
                 throw new InvalidOperationException("The last card must be discaded.");
             }
             melds.Add(mr);
+            this.CameOut = true;
         } catch (Exception e) {
             throw new InvalidOperationException(e.Message);
         }
@@ -101,6 +102,7 @@ public class SinglePlayer<T, U> where T : Scale, new() where U : Scale, new()
                 throw new InvalidOperationException("The last card must be discaded.");
             }
             melds.Add(mr);
+            this.CameOut = true;
         } catch (Exception e) {
             throw new InvalidOperationException(e.Message);
         }

@@ -127,7 +127,13 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
         // End melds.
 
         this.PrevError = "";
-        this.Pointer = this.GameData.NumPlayers() - 1 - this.GameData.HumanPos();
+
+        if (this.GameData.HumanPos() == 0) {
+            this.Pointer = this.GameData.NumPlayers() - 2;
+        } else {
+            this.Pointer = (this.GameData.GetOpponents().Count - this.GameData.HumanPos())%(this.GameData.NumPlayers() - 1);
+        }
+
         this.Moment = Step.START;
         this.IsAnimating = false;
 
@@ -256,6 +262,7 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
             }
         }
         bool cancel = false;
+        bool press = false;
         switch (this.Moment) {
             case Step.START:
                 if (this.GameData.IsHumanTurn()) {
@@ -276,32 +283,36 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
                 this.PrevError = "";
                 break;
             case Step.HUM_RUN:
-                List<int>? lstRun = this.Hand.ReadToHover();
+                (List<int>? lstRun, press) = this.Hand.ReadToHover();
                 if (lstRun != null) {
                     this.MoveAsked = new ResultMove<int>(MoveKind.RUN, lstRun, null, null);
                 }
                 (cancel, this.Moment) = this.Buttons.OnMouseButtonPress(sender, e);
                 break;
             case Step.HUM_SET:
-                List<int>? lstSet = this.Hand.ReadToHover();
+                (List<int>? lstSet, press) = this.Hand.ReadToHover();
                 if (lstSet != null) {
                     this.MoveAsked = new ResultMove<int>(MoveKind.SET, lstSet, null, null);
                 }
                 (cancel, this.Moment) = this.Buttons.OnMouseButtonPress(sender, e);
                 break;
             case Step.HUM_LAYOFF:
-                this.Melds.ToggleMelds(this.Moment);
+                (List<int>? lstLay, press) = this.Hand.ReadToHover();
+                if (!press) {
+                    this.Melds.ToggleMelds(this.Moment);
+                }
                 (int? nMeld, _) = this.Melds.GetSelected();
-                List<int>? lstLay = this.Hand.ReadToHover();
                 if (lstLay != null && nMeld != null) {
                     this.MoveAsked = new ResultMove<int>(MoveKind.LAY_OFF, lstLay, nMeld, null);
                 }
                 (cancel, this.Moment) = this.Buttons.OnMouseButtonPress(sender, e);
                 break;
             case Step.HUM_REPLACE:
-                this.Melds.ToggleMelds(this.Moment);
+                (List<int>? lstReplace, press) = this.Hand.ReadToHover();
+                if (!press) {
+                    this.Melds.ToggleMelds(this.Moment);
+                }
                 (int? nMeldRep, int? nCard) = this.Melds.GetSelected();
-                List<int>? lstReplace = this.Hand.ReadToHover();
                 if (lstReplace != null && nMeldRep != null && nCard != null) {
                     this.MoveAsked = new ResultMove<int>(MoveKind.REPLACE, lstReplace, nMeldRep, nCard);
                 }
@@ -380,7 +391,7 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
         }
         Sprite sprite = this.SpritePicked();
         Vector2f end = this.Opponents.GetCardPosition(this.Pointer);
-        this.Animation = new SlideAnimation(sprite, start, end, 0678.0f);
+        this.Animation = new SlideAnimation(sprite, start, end, 0678.0f); // SPEED
 
         this.UpdatePiles();
         this.Moment = Step.BOT_PLAY;
@@ -686,12 +697,12 @@ class MatchState<T, U> : GameState where T : Scale, new() where U : Scale, new()
 
     public override void Draw(RenderWindow window) {
         window.Draw(this.Background);
-        this.Buttons.Render(window);
+        this.Opponents.Render(window);
         this.Melds.Render(window);
         this.Hand.Render(window);
         this.Bar.Render(window);
         this.Piles.Render(window);
-        this.Opponents.Render(window);
+        this.Buttons.Render(window);
 
         if (this.Animation != null) {
             this.Animation.Render(window);

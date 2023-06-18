@@ -1,6 +1,15 @@
-//https://towardsdatascience.com/ai-learning-gin-rummy-part-ii-enter-google-tensorflow-7338ef93f2ed
-//https://towardsdatascience.com/learning-gin-rummy-part-i-75aef02c94ba
 namespace Domain;
+
+public class PosCard<T, U> where T : Scale, new() where U : Scale, new()
+{
+    public ICard<T, U> Card;
+    public int Pos;
+
+    public PosCard(ICard<T, U> card, int pos) {
+        this.Card = card;
+        this.Pos = pos;
+    }
+}
 
 public class Brain<T, U> where T : Scale, new() where U : Scale, new()
 {
@@ -8,6 +17,56 @@ public class Brain<T, U> where T : Scale, new() where U : Scale, new()
 
     public Brain(Rules<T, U> rules) {
         this.Rules = rules;
+    }
+
+    private bool HasCard(ICard<T, U> card, List<PosCard<T, U>> hand) {
+        for (int i = 0; i < hand.Count; i++) {
+            if (card.Equals(hand[i])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Remove all duplicates from a hand.
+    private List<PosCard<T, U>> MakeUnique(List<PosCard<T, U>> hand) {
+        List<PosCard<T, U>> newHand = new List<PosCard<T, U>>();
+
+        for (int i = 0; i < hand.Count; i++) {
+            if (!this.HasCard(hand[i].Card, newHand)) {
+                newHand.Add(hand[i]);
+            }
+        }
+
+        return newHand;
+    }
+
+    private List<List<PosCard<T, U>>> GroupByRank(List<PosCard<T, U>> hand) {
+        List<List<PosCard<T, U>>> newHand = new List<List<PosCard<T, U>>>();
+
+        int count = 0;
+        bool found = false;
+        for (int i = 0; i < hand.Count; i++) {
+            while (count < newHand.Count && !found) {
+                found = hand[i].Card.CompareRank(newHand[count][0].Card) == 0;
+                if (!found) {
+                    count++;
+                }
+            }
+
+            if (found) {
+                newHand[count].Add(hand[i]);
+            } else {
+                newHand.Add(new List<PosCard<T, U>>());
+                newHand[newHand.Count - 1].Add(hand[i]);
+            }
+
+            found = false;
+            count = 0;
+        }
+
+        return newHand;
     }
 
     // hand can be sorted or not.
@@ -28,22 +87,6 @@ public class Brain<T, U> where T : Scale, new() where U : Scale, new()
 
         return ranks;
     }
-
-    /*
-    private List<List<ICard<T, U>>> HandBySuit(List<ICard<T, U>> hand) {
-        List<List<ICard<T, U>>> suits = new List<List<ICard<T, U>>>();
-        for (int i = 0; i < hand.Count; i++) {
-            ICard<T, U> c = hand[i];
-            if (c.IsWild()) {
-                suits[4].Add(c);
-            } else {
-                suits[c.GetSuit().Position()].Add(c);
-            }
-        }
-
-        return ranks;
-    }
-    */
 
     // Pair each card with its current position.
     private List<(ICard<T, U>, int)> NumberCards(ArrayHand<T, U> hand) {
@@ -112,6 +155,46 @@ public class Brain<T, U> where T : Scale, new() where U : Scale, new()
     }
     */
 
+    private List<int>? FirstSet(ArrayHand<T, U> hand) {
+        if (hand.Size() == 0) {
+            return null;
+        }
+
+        List<(ICard<T, U>, int)> cards = this.PrimeSet(hand);
+        List<int> poses = new List<int>();
+        ICard<T, U>? pointer = null;
+        ICard<T, U>? prev = null;
+
+        for (int i = 0; i < cards.Count; i++) {
+            ICard<T, U> c = cards.ElementAt(i).Item1;
+            if (c.IsWild()) {
+                return null;
+            }
+            if (pointer == null || prev == null) {
+                pointer = ICard<T, U>.Copy(c);
+                prev = c;
+            } else {
+                pointer.Next(true, true);
+                if (c.Equals(pointer)) {
+                    poses.Add(cards.ElementAt(i).Item2);
+                    prev = c;
+                } else if (c.Equals(prev)) {
+                    pointer.Prev(true, true);
+                } else {
+                    if (poses.Count >= this.Rules.MeldR.MinRunLen) {
+                        return poses;
+                    }
+                    pointer = ICard<T, U>.Copy(c);
+                    prev = c;
+                    poses.Clear();
+                    poses.Add(cards.ElementAt(i).Item2);
+                }
+            }
+        }
+
+        return null;
+    }
+
     private List<int>? FirstRun(ArrayHand<T, U> hand) {
         if (hand.Size() == 0) {
             return null;
@@ -122,7 +205,7 @@ public class Brain<T, U> where T : Scale, new() where U : Scale, new()
         ICard<T, U>? pointer = null;
         ICard<T, U>? prev = null;
 
-        for (int i = 1; i < cards.Count; i++) {
+        for (int i = 0; i < cards.Count; i++) {
             ICard<T, U> c = cards.ElementAt(i).Item1;
             if (c.IsWild()) {
                 return null;

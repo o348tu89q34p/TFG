@@ -97,6 +97,7 @@ namespace Domain {
                 guide.Prev(false, this.Rules.CanWrap);
 
                 int count = hand.Size() - 1;
+                // make fit be this.First != first in run.
                 bool fit = true;
 
                 while (count >= 0 && fit) {
@@ -117,6 +118,7 @@ namespace Domain {
                     for (int i = hand.Size() - 1; i >= 0; i--) {
                         this.Cards.AddFirst(hand.GetAt(i));
                     }
+                    this.NumWc += hand.NumWc;
                     return;
                 }
 
@@ -144,6 +146,7 @@ namespace Domain {
                     for (int i = 0; i < hand.Size(); i++) {
                         this.Cards.AddLast(hand.GetAt(i));
                     }
+                    this.NumWc += hand.NumWc;
                     return;
                 }
 
@@ -183,6 +186,7 @@ namespace Domain {
 
                 WildCard<T, U> current = (WildCard<T, U>)pointer.Value;
                 pointer.Value = card;
+                this.NumWc--;
 
                 return current;
             }
